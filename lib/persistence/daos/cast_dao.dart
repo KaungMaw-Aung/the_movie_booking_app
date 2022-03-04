@@ -25,8 +25,8 @@ class CastDao {
     return getCastBox().values.toList();
   }
 
-  Box<CastVO> getCastBox() {
-    return Hive.box<CastVO>(BOX_NAME_CAST_VO);
+  List<CastVO> getCastsByMovieId(int movieId) {
+    return getCasts().where((cast) => cast.movieIds?.contains(movieId) == true).toList();
   }
 
   void updateCastInMovie(int castId, int movieId) {
@@ -35,6 +35,23 @@ class CastDao {
       getCastBox().put(castId, updatedCast);
     }
   }
+
+  /// reactive programming
+  Stream<void> getAllEventsFromCastBox() {
+    return getCastBox().watch();
+  }
+
+  Stream<List<CastVO>> getCastsStreamByMovieId(int movieId) {
+    return Stream.value(
+      getCasts().where((cast) => cast.movieIds?.contains(movieId) == true).toList()
+    );
+  }
+
+  Box<CastVO> getCastBox() {
+    return Hive.box<CastVO>(BOX_NAME_CAST_VO);
+  }
+
+
 
 
 }

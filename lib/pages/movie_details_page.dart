@@ -44,13 +44,13 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
     //   });
     // }).catchError((error) => debugPrint(error.toString()));
 
-    movieBookingModel.getMovieCredit(widget.movieId).then((casts) {
-      setState(() {
-        this.casts = casts;
-      });
-    }).catchError((error) {
-      debugPrint(error.toString());
-    });
+    // movieBookingModel.getMovieCredit(widget.movieId).then((casts) {
+    //   setState(() {
+    //     this.casts = casts;
+    //   });
+    // }).catchError((error) {
+    //   debugPrint(error.toString());
+    // });
 
     movieBookingModel
         .getMovieDetailByIdFromDatabase(widget.movieId)
@@ -63,11 +63,11 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
 
     movieBookingModel
         .getCastsByMovieIdFromDatabase(widget.movieId)
-        .then((casts) {
+        .listen((casts) {
       setState(() {
         this.casts = casts;
       });
-    }).catchError((error) => debugPrint(error.toString()));
+    }).onError((error) => debugPrint(error.toString()));
 
     super.initState();
   }

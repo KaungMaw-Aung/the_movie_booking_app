@@ -122,8 +122,8 @@ class MovieBookingModelImpl extends MovieBookingModel {
   }
 
   @override
-  Future<List<CastVO>?> getMovieCredit(int movieId) {
-    return dataAgent.getMovieCredit(movieId).then((casts) {
+  void getMovieCredit(int movieId) {
+    dataAgent.getMovieCredit(movieId).then((casts) {
       List<int> castIds =
           castDao.getCasts().map((each) => each.id ?? -1).toList();
       casts?.forEach((cast) {
@@ -134,7 +134,6 @@ class MovieBookingModelImpl extends MovieBookingModel {
           castDao.saveCast(cast);
         }
       });
-      return Future.value(casts);
     });
   }
 
@@ -257,11 +256,11 @@ class MovieBookingModelImpl extends MovieBookingModel {
   }
 
   @override
-  Future<List<CastVO>> getCastsByMovieIdFromDatabase(int movieId) {
-    return Future.value(castDao
-        .getCasts()
-        .where((cast) => cast.movieIds?.contains(movieId) == true)
-        .toList());
+  Stream<List<CastVO>> getCastsByMovieIdFromDatabase(int movieId) {
+    getMovieCredit(movieId);
+    return castDao.getAllEventsFromCastBox()
+        .startWith(castDao.getCastsStreamByMovieId(movieId))
+        .map((event) => castDao.getCastsByMovieId(movieId));
   }
 
   @override

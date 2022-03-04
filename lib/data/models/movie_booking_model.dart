@@ -34,7 +34,7 @@ abstract class MovieBookingModel {
 
   void getMovieDetail(int movieId);
 
-  Future<List<CastVO>?> getMovieCredit(int movieId);
+  void getMovieCredit(int movieId);
 
   void getCinemaDayTimeslot(int movieId, String date);
 
@@ -66,7 +66,7 @@ abstract class MovieBookingModel {
 
   Stream<MovieVO?> getMovieDetailByIdFromDatabase(int movieId);
 
-  Future<List<CastVO>> getCastsByMovieIdFromDatabase(int movieId);
+  Stream<List<CastVO>> getCastsByMovieIdFromDatabase(int movieId);
 
   Stream<List<SnackVO>> getSnacksFromDatabase();
 
