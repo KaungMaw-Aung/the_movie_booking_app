@@ -38,7 +38,7 @@ void main() async{
   await Hive.openBox<MovieVO>(BOX_NAME_MOVIE_VO);
   await Hive.openBox<CastVO>(BOX_NAME_CAST_VO);
   await Hive.openBox<SnackVO>(BOX_NAME_SNACK_VO);
-  await Hive.openBox<CinemaListForHiveVO>(BOX_NAME_CINEMA_LIST_FOR_HIVE_VO);
+  await Hive.openBox<CinemaVO>(BOX_NAME_CINEMA_VO);
   await Hive.openBox<PaymentVO>(BOX_NAME_PAYMENT_VO);
 
   runApp(const MyApp());

@@ -145,7 +145,9 @@ class MovieBookingModelImpl extends MovieBookingModel {
         movieId,
         date,
       ).then((cinemas) {
-        cinemaDao.saveCinemasByDate(date, cinemas ?? []);
+        if (cinemas != null) {
+          cinemaDao.saveCinemas(cinemas, date);
+        }
       });
     });
   }
@@ -275,7 +277,7 @@ class MovieBookingModelImpl extends MovieBookingModel {
     getCinemaDayTimeslot(movieId, date);
     return cinemaDao.getAllEventsFromCinemaBox()
     .startWith(cinemaDao.getCinemasStreamByDate(date))
-    .map((event) => cinemaDao.getCinemasByDate(date));
+    .map((event) => cinemaDao.getCinemaByDate(date));
   }
 
   @override

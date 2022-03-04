@@ -21,10 +21,17 @@ class CinemaVO {
   @HiveField(2)
   List<TimeslotVO>? timeslots;
 
-  CinemaVO(this.cinemaId, this.cinema, this.timeslots);
+  @HiveField(3)
+  List<String>? dates;
+
+  CinemaVO(this.cinemaId, this.cinema, this.timeslots, this.dates);
 
   factory CinemaVO.fromJson(Map<String, dynamic> json) => _$CinemaVOFromJson(json);
 
   Map<String, dynamic> toJson() => _$CinemaVOToJson(this);
 
+  @override
+  String toString() {
+    return 'CinemaVO{cinemaId: $cinemaId, cinema: $cinema, timeslots: $timeslots, dates: $dates}';
+  }
 }
