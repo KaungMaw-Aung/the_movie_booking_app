@@ -10,7 +10,6 @@ import 'package:the_movie_booking_app/data/vos/voucher_vo.dart';
 import 'package:the_movie_booking_app/network/data_agents/movie_booking_data_agent.dart';
 import 'package:the_movie_booking_app/network/movie_booking_api.dart';
 import 'package:the_movie_booking_app/network/responses/checkout_request.dart';
-import 'package:the_movie_booking_app/network/responses/checkout_response.dart';
 import 'package:the_movie_booking_app/network/tmdb_api.dart';
 
 import '../api_constants.dart';
@@ -41,8 +40,8 @@ class MovieBookingRetrofitDataAgentImpl extends MovieBookingDataAgent {
       String? googleAccessToken,
       String? facebookAccessToken) {
     return mApi
-        .registerWithEmail(name, email, phone, password, googleAccessToken ?? "",
-            facebookAccessToken ?? "")
+        .registerWithEmail(name, email, phone, password,
+            googleAccessToken ?? "", facebookAccessToken ?? "")
         .asStream()
         .map((response) => [response.data, response.token, response.message])
         .first;
@@ -61,6 +60,13 @@ class MovieBookingRetrofitDataAgentImpl extends MovieBookingDataAgent {
   Future<List<dynamic>> loginWithEmail(String email, String password) {
     return mApi
         .loginWithEmail(email, password)
+        .then((value) {
+          if (value.code == RESPONSE_CODE_SUCCESS) {
+            return Future.value(value);
+          } else {
+            return Future.error(value.message ?? "auth error");
+          }
+        })
         .asStream()
         .map((response) => [response.data, response.token, response.message])
         .first;
@@ -68,7 +74,8 @@ class MovieBookingRetrofitDataAgentImpl extends MovieBookingDataAgent {
 
   @override
   Future<List<dynamic>> loginWithGoogle(String accessToken) {
-    return mApi.loginWithGoogle(accessToken)
+    return mApi
+        .loginWithGoogle(accessToken)
         .asStream()
         .map((response) => [response.data, response.token, response.message])
         .first;
@@ -76,7 +83,8 @@ class MovieBookingRetrofitDataAgentImpl extends MovieBookingDataAgent {
 
   @override
   Future<List<dynamic>> loginWithFacebook(String accessToken) {
-    return mApi.loginWithFacebook(accessToken)
+    return mApi
+        .loginWithFacebook(accessToken)
         .asStream()
         .map((response) => [response.data, response.token, response.message])
         .first;
@@ -173,11 +181,10 @@ class MovieBookingRetrofitDataAgentImpl extends MovieBookingDataAgent {
 
   @override
   Future<VoucherVO?> checkout(String token, CheckoutRequest request) {
-    return mApi.checkout(token, request)
-    .asStream()
-    .map((response) => response.data)
-    .first;
+    return mApi
+        .checkout(token, request)
+        .asStream()
+        .map((response) => response.data)
+        .first;
   }
-
-
 }

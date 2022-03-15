@@ -86,7 +86,7 @@ class _LogInPageState extends State<LogInPage> {
     movieBookingModel.loginWithEmail(email, password).then((message) {
       showToast(message ?? "login succeed");
       _navigateToHomePage(context);
-    }).catchError((error) => debugPrint(error.toString()));
+    }).catchError((error) => showToast(error ?? "login succeed"));
   }
 
   /// login with google

@@ -28,7 +28,7 @@ class UserDao {
     return getUser()?.cards;
   }
 
-  /// reactive
+  /// reactive programming
 
   Stream<void> getAllEventsFromUserBox() {
     return getUserBox().watch();

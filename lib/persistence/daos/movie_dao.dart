@@ -22,7 +22,12 @@ class MovieDao {
   }
 
   void saveMovieDetail(MovieVO movie) async {
-    await getMovieBox().put(movie.id ?? -1, movie);
+    var movieFromHive = getMovieById(movie.id ?? -1);
+    if (movieFromHive != null) {
+      movie.isComingSoon = movieFromHive.isComingSoon;
+      movie.isNowPlaying = movieFromHive.isNowPlaying;
+      await getMovieBox().put(movie.id ?? -1, movie);
+    }
   }
 
   MovieVO? getMovieById(int movieId) {

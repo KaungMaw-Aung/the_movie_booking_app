@@ -48,3 +48,5 @@ const String KEY_ACCESS_TOKEN = "access-token";
 /// Constant Values
 const String API_KEY = "948d1ec7e82027d36cf4ceb80ee7632c";
 const String LANGUAGE_EN_US = "en-US";
+
+const int RESPONSE_CODE_SUCCESS = 200;
