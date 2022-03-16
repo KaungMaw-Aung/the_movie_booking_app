@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:the_movie_booking_app/data/models/movie_booking_model.dart';
-import 'package:the_movie_booking_app/data/models/movie_booking_model_impl.dart';
+import 'package:provider/provider.dart';
+import 'package:the_movie_booking_app/blocs/movie_details_bloc.dart';
 import 'package:the_movie_booking_app/data/vos/cast_vo.dart';
 import 'package:the_movie_booking_app/data/vos/movie_vo.dart';
 import 'package:the_movie_booking_app/network/api_constants.dart';
@@ -15,137 +15,98 @@ import 'package:the_movie_booking_app/widgets/sub_heading_text_view.dart';
 
 import 'movie_choose_time_page.dart';
 
-class MovieDetailsPage extends StatefulWidget {
+class MovieDetailsPage extends StatelessWidget {
   final int movieId;
 
   MovieDetailsPage({required this.movieId});
 
   @override
-  State<MovieDetailsPage> createState() => _MovieDetailsPageState();
-}
-
-class _MovieDetailsPageState extends State<MovieDetailsPage> {
-  final List<String> genres = ["Mystery", "Adventure"];
-
-  /// state variables
-  MovieVO? movie;
-  List<CastVO>? casts;
-
-  String? moviePosterUrl;
-
-  MovieBookingModel movieBookingModel = MovieBookingModelImpl();
-
-  @override
-  void initState() {
-    // movieBookingModel.getMovieDetail(widget.movieId).then((movie) {
-    //   setState(() {
-    //     moviePosterUrl = movie?.posterPath;
-    //     this.movie = movie;
-    //   });
-    // }).catchError((error) => debugPrint(error.toString()));
-
-    // movieBookingModel.getMovieCredit(widget.movieId).then((casts) {
-    //   setState(() {
-    //     this.casts = casts;
-    //   });
-    // }).catchError((error) {
-    //   debugPrint(error.toString());
-    // });
-
-    movieBookingModel
-        .getMovieDetailByIdFromDatabase(widget.movieId)
-        .listen((movie) {
-      setState(() {
-        moviePosterUrl = movie?.posterPath;
-        this.movie = movie;
-      });
-    }).onError((error) => debugPrint(error.toString()));
-
-    movieBookingModel
-        .getCastsByMovieIdFromDatabase(widget.movieId)
-        .listen((casts) {
-      setState(() {
-        this.casts = casts;
-      });
-    }).onError((error) => debugPrint(error.toString()));
-
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomScrollView(
-              slivers: [
-                MovieDetailsSliverAppBarView(
+    return ChangeNotifierProvider(
+      create: (context) => MovieDetailsBloc(movieId),
+      child: Scaffold(
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: CustomScrollView(
+                slivers: [
+                  Selector<MovieDetailsBloc, String?>(
+                    selector: (context, bloc) => bloc.moviePosterUrl,
+                    builder: (context, posterUrl, child) =>
+                        MovieDetailsSliverAppBarView(
                       () => _backToHomePage(context),
-                  posterPath: movie?.posterPath,
-                ),
-                SliverList(
-                  delegate: SliverChildListDelegate(
-                    [
-                      const SizedBox(
-                        height: MARGIN_LARGE,
-                      ),
-                      MovieDetailsInfoSectionView(
-                        movie: movie,
-                      ),
-                      const SizedBox(
-                        height: MARGIN_LARGE,
-                      ),
-                      MovieDetailsPlotSectionView(
-                        overview: movie?.overview,
-                      ),
-                      const SizedBox(
-                        height: MARGIN_LARGE,
-                      ),
-                      MovieDetailsCastSectionView(
-                        casts: casts,
-                      ),
-                      const SizedBox(
-                        height: MOVIE_DETAIL_SCREEN_MARGIN_BOTTOM,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: MARGIN_MEDIUM_3),
-              child: PrimaryButtonView(
-                GET_YOUR_TICKET,
-                    () =>
-                    _navigateToMovieChooseTimePage(
-                      context,
-                      widget.movieId,
-                      movie?.title ?? "",
+                      posterPath: posterUrl,
                     ),
-                isElevated: true,
+                  ),
+                  SliverList(
+                    delegate: SliverChildListDelegate(
+                      [
+                        const SizedBox(
+                          height: MARGIN_LARGE,
+                        ),
+                        Selector<MovieDetailsBloc, MovieVO?>(
+                          selector: (context, bloc) => bloc.movie,
+                          builder: (context, movie, child) =>
+                              MovieDetailsInfoSectionView(movie: movie),
+                        ),
+                        const SizedBox(
+                          height: MARGIN_LARGE,
+                        ),
+                        Selector<MovieDetailsBloc, MovieVO?>(
+                          selector: (context, bloc) => bloc.movie,
+                          builder: (context, movie, child) =>
+                              MovieDetailsPlotSectionView(
+                            overview: movie?.overview,
+                          ),
+                        ),
+                        const SizedBox(
+                          height: MARGIN_LARGE,
+                        ),
+                        Selector<MovieDetailsBloc, List<CastVO>?>(
+                          selector: (context, bloc) => bloc.casts,
+                          builder: (context, casts, child) =>
+                              MovieDetailsCastSectionView(
+                            casts: casts,
+                          ),
+                        ),
+                        const SizedBox(
+                          height: MOVIE_DETAIL_SCREEN_MARGIN_BOTTOM,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          )
-        ],
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: MARGIN_MEDIUM_3),
+                child: Builder(
+                  builder: (context) => PrimaryButtonView(
+                    GET_YOUR_TICKET,
+                    () => _navigateToMovieChooseTimePage(context),
+                    isElevated: true,
+                  ),
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
 
-  _navigateToMovieChooseTimePage(BuildContext context, int movieId,
-      String movieTitle) {
+  _navigateToMovieChooseTimePage(BuildContext context) {
+    MovieDetailsBloc bloc = Provider.of(context, listen: false);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            MovieChooseTimePage(
-              movieId: movieId,
-              movieTitle: movieTitle,
-              moviePosterUrl: moviePosterUrl ?? "",
-            ),
+        builder: (context) => MovieChooseTimePage(
+          movieId: bloc.movie?.id ?? -1,
+          movieTitle: bloc.movie?.title ?? "",
+          moviePosterUrl: bloc.moviePosterUrl ?? "",
+        ),
       ),
     );
   }
@@ -182,8 +143,8 @@ class MovieDetailsCastSectionView extends StatelessWidget {
             ),
             scrollDirection: Axis.horizontal,
             children: casts
-                ?.map((cast) => CastView(castImgUrl: cast.profilePath))
-                .toList() ??
+                    ?.map((cast) => CastView(castImgUrl: cast.profilePath))
+                    .toList() ??
                 [],
           ),
         )
@@ -257,8 +218,8 @@ class MovieDetailsInfoSectionView extends StatelessWidget {
         ),
         Wrap(
           children: movie?.genres
-              ?.map((genre) => GenreChipView(genre.name))
-              .toList() ??
+                  ?.map((genre) => GenreChipView(genre.name))
+                  .toList() ??
               [],
         ),
       ],
@@ -284,7 +245,7 @@ class GenreChipView extends StatelessWidget {
               horizontal: MARGIN_MEDIUM_2, vertical: MARGIN_CARD_MEDIUM_2),
           backgroundColor: Colors.white,
           side:
-          const BorderSide(color: SECONDARY_WELCOME_TEXT_COLOR, width: 0.5),
+              const BorderSide(color: SECONDARY_WELCOME_TEXT_COLOR, width: 0.5),
           label: Text(
             label ?? "",
           ),
@@ -336,8 +297,7 @@ class RatingView extends StatelessWidget {
   Widget build(BuildContext context) {
     return RatingBar.builder(
       initialRating: 5.0,
-      itemBuilder: (BuildContext context, int index) =>
-      const Icon(
+      itemBuilder: (BuildContext context, int index) => const Icon(
         Icons.star,
         color: RATING_STAR_COLOR,
         size: MARGIN_LARGE,
@@ -361,11 +321,8 @@ class MovieDetailsSliverAppBarView extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverAppBar(
       automaticallyImplyLeading: false,
-      expandedHeight: MediaQuery
-          .of(context)
-          .size
-          .height * 2 / 5,
-      backgroundColor: PRIMARY_COLOR,
+      expandedHeight: MediaQuery.of(context).size.height * 2 / 5,
+      backgroundColor: HOME_SCREEN_BACKGROUND_COLOR,
       flexibleSpace: Stack(
         children: [
           FlexibleSpaceBar(
