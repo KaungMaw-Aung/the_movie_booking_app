@@ -1,11 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:the_movie_booking_app/data/models/movie_booking_model.dart';
-import 'package:the_movie_booking_app/data/models/movie_booking_model_impl.dart';
+import 'package:provider/provider.dart';
+import 'package:the_movie_booking_app/blocs/home_bloc.dart';
 import 'package:the_movie_booking_app/data/vos/movie_vo.dart';
 import 'package:the_movie_booking_app/pages/movie_details_page.dart';
 import 'package:the_movie_booking_app/pages/welcome_page.dart';
-import 'package:the_movie_booking_app/persistence/daos/user_dao.dart';
 import 'package:the_movie_booking_app/resources/colors.dart';
 import 'package:the_movie_booking_app/resources/dimens.dart';
 import 'package:the_movie_booking_app/resources/strings.dart';
@@ -14,12 +13,7 @@ import 'package:the_movie_booking_app/viewitems/movie_view.dart';
 import 'package:the_movie_booking_app/widgets/heading_text_view.dart';
 import 'package:the_movie_booking_app/widgets/sub_heading_text_view.dart';
 
-class HomePage extends StatefulWidget {
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
+class HomePage extends StatelessWidget {
   List<String> menuItems = [
     "Promotion code",
     "Select a language",
@@ -28,172 +22,144 @@ class _HomePageState extends State<HomePage> {
     "Rate us"
   ];
 
-  /// state variables
-  String? name;
-  String? email;
-  List<MovieVO>? nowPlayingMovies;
-  List<MovieVO>? comingSoonMovies;
-
-  MovieBookingModel movieBookingModel = MovieBookingModelImpl();
-
-  @override
-  void initState() {
-    movieBookingModel.getUserFromDatabase().listen((user) {
-      print("user from home: ${user.toString()}");
-      setState(() {
-        name = user?.name ?? "";
-        email = user?.email ?? "";
-      });
-    }).onError((error) {
-      debugPrint(error.toString());
-    });
-
-    // movieBookingModel.getNowPlayingMovies(1).then((movies) {
-    //   setState(() {
-    //     nowPlayingMovies = movies;
-    //   });
-    // }).catchError((error) => debugPrint(error.toString()));
-    //
-    // movieBookingModel.getComingSoonMovies(1).then((movies) {
-    //   setState(() {
-    //     comingSoonMovies = movies;
-    //   });
-    // }).catchError((error) => debugPrint(error.toString()));
-
-    movieBookingModel.getNowPlayingFromDatabase().listen((movies) {
-      setState(() {
-        nowPlayingMovies = movies;
-      });
-    }).onError((error) => debugPrint(error.toString()));
-
-    movieBookingModel.getComingSoonFromDatabase().listen((movies) {
-      setState(() {
-        comingSoonMovies = movies;
-      });
-    }).onError((error) => debugPrint(error.toString()));
-
-    movieBookingModel.getSnacks();
-
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: Builder(
-          builder: (context) => GestureDetector(
-            onTap: () => Scaffold.of(context).openDrawer(),
-            child: Padding(
+    return ChangeNotifierProvider(
+      create: (context) => HomeBloc(),
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: Builder(
+            builder: (context) => GestureDetector(
+              onTap: () => Scaffold.of(context).openDrawer(),
+              child: Padding(
+                padding: const EdgeInsets.all(
+                  MARGIN_CARD_MEDIUM_2,
+                ),
+                child: Image.asset(
+                  'assets/images/menu_icon.png',
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            Padding(
               padding: const EdgeInsets.all(
-                MARGIN_CARD_MEDIUM_2,
+                MARGIN_MEDIUM,
               ),
               child: Image.asset(
-                'assets/images/menu_icon.png',
+                'assets/images/search_icon.png',
+              ),
+            )
+          ],
+        ),
+        drawer: Container(
+          width: MediaQuery.of(context).size.width * 0.8,
+          child: Drawer(
+            child: Container(
+              color: PRIMARY_COLOR,
+              padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
+              child: Column(
+                children: [
+                  const SizedBox(
+                    height: DRAWER_HEADER_TOP_MARGIN,
+                  ),
+                  DrawerHeaderSectionView(),
+                  const SizedBox(
+                    height: MARGIN_XXLARGE,
+                  ),
+                  Column(
+                    children: menuItems
+                        .map(
+                          (item) => Container(
+                            margin: const EdgeInsets.only(top: MARGIN_MEDIUM_2),
+                            child: ListTile(
+                              leading: const Icon(
+                                Icons.help,
+                                size: MARGIN_XLARGE,
+                                color: Colors.white,
+                              ),
+                              title: Text(item,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: TEXT_REGULAR_3X,
+                                  )),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                  const Spacer(),
+                  Builder(
+                    builder: (BuildContext context) => ListTile(
+                      onTap: () {
+                        HomeBloc bloc = Provider.of(context, listen: false);
+                        bloc.logout().then((message) {
+                          showToast(message ?? "logout succeed");
+                          bloc.deleteUserFromDatabase();
+                          _navigateToWelcomePage(context);
+                        }).catchError((error) => debugPrint(error.toString()));
+                      },
+                      leading: const Icon(
+                        Icons.logout,
+                        size: MARGIN_XLARGE,
+                        color: Colors.white,
+                      ),
+                      title: const Text(
+                        LOGOUT_TEXT,
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: TEXT_REGULAR_3X,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(
+                    height: MARGIN_LARGE,
+                  ),
+                ],
               ),
             ),
           ),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.all(
-              MARGIN_MEDIUM,
-            ),
-            child: Image.asset(
-              'assets/images/search_icon.png',
-            ),
-          )
-        ],
-      ),
-      drawer: Container(
-        width: MediaQuery.of(context).size.width * 0.8,
-        child: Drawer(
-          child: Container(
-            color: PRIMARY_COLOR,
-            padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-            child: Column(
-              children: [
-                const SizedBox(
-                  height: DRAWER_HEADER_TOP_MARGIN,
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(
+                height: MARGIN_CARD_MEDIUM_2,
+              ),
+              Selector<HomeBloc, String?>(
+                selector: (context, bloc) => bloc.name,
+                builder: (context, name, child) =>
+                    UserProfileSectionView(name: name ?? ""),
+              ),
+              const SizedBox(
+                height: MARGIN_MEDIUM_2,
+              ),
+              Selector<HomeBloc, List<MovieVO>?>(
+                selector: (context, bloc) => bloc.nowPlayingMovies,
+                builder: (context, nowPlayingMovies, child) =>
+                    MovieListSectionView(
+                  "Now Showing",
+                  (int movieId) => _navigateToMovieDetailPage(context, movieId),
+                  movies: nowPlayingMovies,
                 ),
-                DrawerHeaderSectionView(
-                  email: email ?? "",
-                  name: name ?? "",
+              ),
+              const SizedBox(
+                height: MARGIN_LARGE,
+              ),
+              Selector<HomeBloc, List<MovieVO>?>(
+                selector: (context, bloc) => bloc.comingSoonMovies,
+                builder: (context, comingSoonMovies, child) =>
+                    MovieListSectionView(
+                  "Coming Soon",
+                  (int movieId) => _navigateToMovieDetailPage(context, movieId),
+                  movies: comingSoonMovies,
                 ),
-                const SizedBox(
-                  height: MARGIN_XXLARGE,
-                ),
-                Column(
-                  children: menuItems
-                      .map(
-                        (item) => Container(
-                          margin: const EdgeInsets.only(top: MARGIN_MEDIUM_2),
-                          child: ListTile(
-                            leading: const Icon(
-                              Icons.help,
-                              size: MARGIN_XLARGE,
-                              color: Colors.white,
-                            ),
-                            title: Text(item,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: TEXT_REGULAR_3X,
-                                )),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
-                const Spacer(),
-                ListTile(
-                  onTap: () => _logout(context),
-                  leading: const Icon(
-                    Icons.logout,
-                    size: MARGIN_XLARGE,
-                    color: Colors.white,
-                  ),
-                  title: const Text(
-                    LOGOUT_TEXT,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: TEXT_REGULAR_3X,
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: MARGIN_LARGE,
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(
-              height: MARGIN_CARD_MEDIUM_2,
-            ),
-            UserProfileSectionView(name: name ?? ""),
-            const SizedBox(
-              height: MARGIN_MEDIUM_2,
-            ),
-            MovieListSectionView(
-              "Now Showing",
-              (int movieId) => _navigateToMovieDetailPage(context, movieId),
-              movies: nowPlayingMovies,
-            ),
-            const SizedBox(
-              height: MARGIN_LARGE,
-            ),
-            MovieListSectionView(
-              "Coming Soon",
-              (int movieId) => _navigateToMovieDetailPage(context, movieId),
-              movies: comingSoonMovies,
-            ),
-          ],
         ),
       ),
     );
@@ -212,24 +178,15 @@ class _HomePageState extends State<HomePage> {
 
   _navigateToWelcomePage(BuildContext context) {
     Navigator.push(
-        context, MaterialPageRoute(builder: (context) => WelcomePage()));
-  }
-
-  _logout(BuildContext context) {
-    movieBookingModel.logout().then((message) {
-      showToast(message ?? "logout succeed");
-      movieBookingModel.deleteUserFromDatabase();
-      _navigateToWelcomePage(context);
-    }).catchError((error) => debugPrint(error.toString()));
+      context,
+      MaterialPageRoute(
+        builder: (context) => WelcomePage(),
+      ),
+    );
   }
 }
 
 class DrawerHeaderSectionView extends StatelessWidget {
-  final String name;
-  final String email;
-
-  DrawerHeaderSectionView({required this.name, required this.email});
-
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -244,22 +201,28 @@ class DrawerHeaderSectionView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: TEXT_REGULAR_3X,
-                    fontWeight: FontWeight.w700,
+                Selector<HomeBloc, String?>(
+                  selector: (context, bloc) => bloc.name,
+                  builder: (context, name, child) => Text(
+                    name ?? "",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: TEXT_REGULAR_3X,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 const SizedBox(
                   height: MARGIN_SMALL,
                 ),
                 Flexible(
-                  child: Text(
-                    email,
-                    style: const TextStyle(
-                      color: Colors.white,
+                  child: Selector<HomeBloc, String?>(
+                    selector: (context, bloc) => bloc.email,
+                    builder: (context, email, child) => Text(
+                      email ?? "",
+                      style: const TextStyle(
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
