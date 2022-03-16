@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:the_movie_booking_app/data/models/movie_booking_model.dart';
-import 'package:the_movie_booking_app/data/models/movie_booking_model_impl.dart';
+import 'package:provider/provider.dart';
+import 'package:the_movie_booking_app/blocs/login_bloc.dart';
 import 'package:the_movie_booking_app/pages/home_page.dart';
 import 'package:the_movie_booking_app/resources/colors.dart';
 import 'package:the_movie_booking_app/resources/dimens.dart';
@@ -11,177 +10,93 @@ import 'package:the_movie_booking_app/widgets/input_field_section_view.dart';
 import 'package:the_movie_booking_app/widgets/label_text_view.dart';
 import 'package:the_movie_booking_app/widgets/primary_button_view.dart';
 import 'package:the_movie_booking_app/widgets/welcome_text_section_view.dart';
-import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 
-class LogInPage extends StatefulWidget {
-  @override
-  State<LogInPage> createState() => _LogInPageState();
-}
-
-class _LogInPageState extends State<LogInPage> {
+class LogInPage extends StatelessWidget {
   final List<String> tabLabels = ["Login", "Sign in"];
-
-  /// state variables
-  String? name, phone, email, googleToken, facebookToken;
-
-  MovieBookingModel movieBookingModel = MovieBookingModelImpl();
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  /// register
-  _register(String name, String number, String email, String password,
-      String? googleToken, String? facebookToken) {
-    movieBookingModel
-        .registerWithEmail(
-            name, email, number, password, googleToken, facebookToken)
-        .then((message) {
-      showToast(message ?? "register succeed");
-      _navigateToHomePage(context);
-    }).catchError((error) {
-      showToast(error.toString());
-      debugPrint(error.toString());
-    });
-  }
-
-  /// register with google
-  _registerWithGoogle() {
-    GoogleSignIn _googleSignIn = GoogleSignIn(
-      scopes: [
-        'email',
-        'https://www.googleapis.com/auth/contacts.readonly',
-      ],
-    );
-    _googleSignIn.signIn().then((googleAccount) {
-      googleAccount?.authentication.then((authentication) {
-        setState(() {
-          email = googleAccount.email;
-          name = googleAccount.displayName;
-          googleToken = googleAccount.id;
-        });
-      });
-    });
-  }
-
-  /// register with facebook
-  _registerWithFacebook() async {
-    final LoginResult result = await FacebookAuth.instance.login();
-    if (result.status == LoginStatus.success) {
-      final userData = await FacebookAuth.instance.getUserData();
-      setState(() {
-        name = userData["name"].toString();
-        email = userData["email"].toString();
-        facebookToken = result.accessToken?.userId;
-      });
-    } else {
-      print(result.status);
-      print(result.message);
-    }
-  }
-
-  /// login
-  _login(String email, String password) {
-    movieBookingModel.loginWithEmail(email, password).then((message) {
-      showToast(message ?? "login succeed");
-      _navigateToHomePage(context);
-    }).catchError((error) => showToast(error ?? "login succeed"));
-  }
-
-  /// login with google
-  _loginWithGoogle() {
-    GoogleSignIn _googleSignIn = GoogleSignIn(
-      scopes: [
-        'email',
-        'https://www.googleapis.com/auth/contacts.readonly',
-      ],
-    );
-    _googleSignIn.signIn().then((googleAccount) {
-      googleAccount?.authentication.then((authentication) {
-        print("id : ${googleAccount.id}");
-        movieBookingModel
-            .loginWithGoogle(googleAccount.id)
-            .then((message) {
-          showToast(message ?? "login with google succeed");
-          _navigateToHomePage(context);
-        }).catchError((error) {
-          showToast(error.toString());
-          debugPrint(error.toString());
-        });
-      });
-    });
-  }
-
-  /// login with facebook
-  _loginWithFacebook() async {
-    final LoginResult result = await FacebookAuth.instance.login();
-    if (result.status == LoginStatus.success) {
-        movieBookingModel.loginWithFacebook(result.accessToken?.userId ?? "")
-            .then((message) {
-          showToast(message ?? "login with facebook succeed");
-          _navigateToHomePage(context);
-        }).catchError((error) {
-          showToast(error.toString());
-          debugPrint(error.toString());
-        });
-    } else {
-      print(result.status);
-      print(result.message);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(
-              height: SIGN_IN_SCREEN_TOP_MARGIN,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: MARGIN_MEDIUM_2),
-              child: WelcomeTextSectionView(
-                "Welcome back, login to continue",
-                false,
-                false,
+    return ChangeNotifierProvider(
+      create: (context) => LoginBloc(),
+      child: Scaffold(
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(
+                height: SIGN_IN_SCREEN_TOP_MARGIN,
               ),
-            ),
-            const SizedBox(
-              height: MARGIN_XLARGE,
-            ),
-            AuthSectionView(
-              email: email,
-              phone: phone,
-              name: name,
-              facebookToken: facebookToken,
-              googleToken: googleToken,
-              onTapLoginConfirmButton: (String email, String password) => _login(email, password),
-              tabLabels: tabLabels,
-              onTapRegisterConfirmButton: (
-                  String name,
-                  String number,
-                  String email,
-                  String password,
-                  String? googleToken,
-                  String? facebookToken,
-                  ) =>
-                  _register(
-                    name,
-                    number,
-                    email,
-                    password,
-                    googleToken,
-                    facebookToken,
-                  ),
-              onTapSignInWithGoogle: () => _registerWithGoogle(),
-              onTapSignInWithFacebook: () => _registerWithFacebook(),
-              onTapLoginWithGoogle: () => _loginWithGoogle(),
-              onTapLoginWithFacebook: () => _loginWithFacebook(),
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.only(left: MARGIN_MEDIUM_2),
+                child: WelcomeTextSectionView(
+                  "Welcome back, login to continue",
+                  false,
+                  false,
+                ),
+              ),
+              const SizedBox(
+                height: MARGIN_XLARGE,
+              ),
+              Builder(
+                builder: (context) {
+                  LoginBloc bloc = Provider.of(context, listen: false);
+                  return AuthSectionView(
+                    onTapLoginConfirmButton: (String email, String password) {
+                      bloc.login(email, password).then((message) {
+                        showToast(message ?? "login succeed");
+                        _navigateToHomePage(context);
+                      }).catchError(
+                          (error) => showToast(error ?? "login succeed"));
+                    },
+                    tabLabels: tabLabels,
+                    onTapRegisterConfirmButton: (
+                      String name,
+                      String number,
+                      String email,
+                      String password,
+                      String? googleToken,
+                      String? facebookToken,
+                    ) {
+                      // print("register data: $name, $number, $email, $googleToken, $facebookToken");
+                      bloc.register(
+                        name,
+                        number,
+                        email,
+                        password,
+                        googleToken,
+                        facebookToken,
+                      ).then((message) {
+                        showToast(message ?? "register succeed");
+                        _navigateToHomePage(context);
+                      }).catchError((error) {
+                        showToast(error.toString());
+                        debugPrint(error.toString());
+                      });
+                    },
+                    onTapSignInWithGoogle: () => bloc.registerWithGoogle(),
+                    onTapSignInWithFacebook: () => bloc.registerWithFacebook(),
+                    onTapLoginWithGoogle: () {
+                      bloc.loginWithGoogle().then((message) {
+                        showToast(message ?? "login with google succeed");
+                        _navigateToHomePage(context);
+                      }).catchError((error) {
+                        showToast(error.toString());
+                        debugPrint(error.toString());
+                      });
+                    },
+                    onTapLoginWithFacebook: () =>
+                        bloc.loginWithFacebook().then((message) {
+                      showToast(message ?? "login with facebook succeed");
+                      _navigateToHomePage(context);
+                    }).catchError((error) {
+                      showToast(error.toString());
+                      debugPrint(error.toString());
+                    }),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -191,7 +106,6 @@ class _LogInPageState extends State<LogInPage> {
     Navigator.push(
         context, MaterialPageRoute(builder: (context) => HomePage()));
   }
-
 }
 
 class AuthSectionView extends StatefulWidget {
@@ -201,11 +115,6 @@ class AuthSectionView extends StatefulWidget {
     required this.onTapSignInWithGoogle,
     required this.onTapLoginConfirmButton,
     required this.onTapRegisterConfirmButton,
-    required this.name,
-    required this.email,
-    required this.phone,
-    required this.googleToken,
-    required this.facebookToken,
     required this.onTapLoginWithGoogle,
     required this.onTapLoginWithFacebook,
   });
@@ -216,7 +125,6 @@ class AuthSectionView extends StatefulWidget {
   final Function(String email, String password) onTapLoginConfirmButton;
   final Function(String name, String number, String email, String password,
       String?, String?) onTapRegisterConfirmButton;
-  final String? name, email, phone, googleToken, facebookToken;
   final Function onTapLoginWithGoogle;
   final Function onTapLoginWithFacebook;
 
@@ -268,11 +176,6 @@ class _AuthSectionViewState extends State<AuthSectionView> {
                 widget.onTapSignInWithFacebook,
                 widget.onTapSignInWithGoogle,
                 widget.onTapRegisterConfirmButton,
-                email: widget.email,
-                phone: widget.phone,
-                name: widget.name,
-                googleToken: widget.googleToken,
-                facebookToken: widget.facebookToken,
               ),
             ),
           ],
@@ -287,18 +190,12 @@ class SignInSectionView extends StatefulWidget {
   final Function onTapSignInWithGoogle;
   final Function(String, String, String, String, String?, String?)
       onTapConfirmButton;
-  final String? name, email, phone, googleToken, facebookToken;
 
   SignInSectionView(
     this.onTapSignInWithFacebook,
     this.onTapSignInWithGoogle,
-    this.onTapConfirmButton, {
-    required this.name,
-    required this.email,
-    required this.phone,
-    required this.googleToken,
-    required this.facebookToken,
-  });
+    this.onTapConfirmButton,
+  );
 
   @override
   State<SignInSectionView> createState() => _SignInSectionViewState();
@@ -317,10 +214,13 @@ class _SignInSectionViewState extends State<SignInSectionView> {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-          child: InputFieldSectionView(
-            NAME_LABEL_TEXT,
-            controller: nameController,
-            initialText: widget.name ?? "",
+          child: Selector<LoginBloc, String?>(
+            selector: (context, bloc) => bloc.name,
+            builder: (context, name, child) => InputFieldSectionView(
+              NAME_LABEL_TEXT,
+              controller: nameController,
+              initialText: name ?? "",
+            ),
           ),
         ),
         const SizedBox(
@@ -332,7 +232,6 @@ class _SignInSectionViewState extends State<SignInSectionView> {
             PHONE_NUMBER_LABEL_TEXT,
             inputType: TextInputType.number,
             controller: numberController,
-            initialText: widget.phone ?? "",
           ),
         ),
         const SizedBox(
@@ -340,10 +239,13 @@ class _SignInSectionViewState extends State<SignInSectionView> {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-          child: InputFieldSectionView(
-            EMAIL_LABEL_TEXT,
-            controller: emailController,
-            initialText: widget.email ?? "",
+          child: Selector<LoginBloc, String?>(
+            selector: (context, bloc) => bloc.email,
+            builder: (context, email, child) => InputFieldSectionView(
+              EMAIL_LABEL_TEXT,
+              controller: emailController,
+              initialText: email ?? "",
+            ),
           ),
         ),
         const SizedBox(
@@ -363,14 +265,17 @@ class _SignInSectionViewState extends State<SignInSectionView> {
         SignInOptionsAndConfirmButtonSectionView(
           widget.onTapSignInWithFacebook,
           widget.onTapSignInWithGoogle,
-          () => widget.onTapConfirmButton(
-            nameController.text,
-            numberController.text,
-            emailController.text,
-            passwordController.text,
-            widget.googleToken,
-            widget.facebookToken,
-          ),
+          () {
+            LoginBloc bloc = Provider.of(context, listen: false);
+            widget.onTapConfirmButton(
+              nameController.text,
+              numberController.text,
+              emailController.text,
+              passwordController.text,
+              bloc.googleToken,
+              bloc.facebookToken,
+            );
+          },
         ),
         const SizedBox(
           height: MARGIN_XLARGE,
