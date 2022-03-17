@@ -23,10 +23,6 @@ class CinemaDao {
       }
     }).toList();
 
-    updatedCinemaList.forEach((element) {
-      print(element.toString());
-    });
-
     Map<int, CinemaVO> cinemaMap = Map.fromIterable(updatedCinemaList,
         key: (cinema) => cinema.cinemaId, value: (cinema) => cinema);
     await getCinemaBox().putAll(cinemaMap);

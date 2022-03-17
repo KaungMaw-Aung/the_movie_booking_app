@@ -29,4 +29,17 @@ class TimeslotVO {
   String toString() {
     return 'TimeslotVO{cinemaTimeslotId: $cinemaTimeslotId, movieTime: $movieTime, isSelected: $isSelected}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TimeslotVO &&
+          runtimeType == other.runtimeType &&
+          cinemaTimeslotId == other.cinemaTimeslotId &&
+          movieTime == other.movieTime &&
+          isSelected == other.isSelected;
+
+  @override
+  int get hashCode =>
+      cinemaTimeslotId.hashCode ^ movieTime.hashCode ^ isSelected.hashCode;
 }

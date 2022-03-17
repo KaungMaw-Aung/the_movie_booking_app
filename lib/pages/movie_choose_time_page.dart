@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:the_movie_booking_app/data/models/movie_booking_model.dart';
-import 'package:the_movie_booking_app/data/models/movie_booking_model_impl.dart';
+import 'package:provider/provider.dart';
+import 'package:the_movie_booking_app/blocs/choose_time_bloc.dart';
 import 'package:the_movie_booking_app/data/vos/cinema_vo.dart';
 import 'package:the_movie_booking_app/data/vos/date_vo.dart';
 import 'package:the_movie_booking_app/pages/movie_seats_page.dart';
@@ -8,7 +8,7 @@ import 'package:the_movie_booking_app/resources/colors.dart';
 import 'package:the_movie_booking_app/resources/dimens.dart';
 import 'package:the_movie_booking_app/widgets/primary_button_view.dart';
 
-class MovieChooseTimePage extends StatefulWidget {
+class MovieChooseTimePage extends StatelessWidget {
   final int? movieId;
   final String? movieTitle;
   final String moviePosterUrl;
@@ -18,50 +18,6 @@ class MovieChooseTimePage extends StatefulWidget {
     required this.movieTitle,
     required this.moviePosterUrl,
   });
-
-  @override
-  State<MovieChooseTimePage> createState() => _MovieChooseTimePageState();
-}
-
-class _MovieChooseTimePageState extends State<MovieChooseTimePage> {
-  /// state variables
-  List<DateVO>? dates;
-  List<CinemaVO>? cinemas;
-
-  String? selectedDate;
-  int? selectedTimeslotId;
-  String? movieTime;
-  String? cinema;
-  int? cinemaId;
-
-  MovieBookingModel movieBookingModel = MovieBookingModelImpl();
-
-  @override
-  void initState() {
-    movieBookingModel.getDates().then((dates) {
-      this.dates = dates;
-      selectedDate = dates?.first.date;
-
-      // _getCinemaDayTimeslot(
-      //   widget.movieId ?? -1,
-      //   dates?.first.date ?? "",
-      // );
-
-      _getCinemaDayTimeslotFromDatabase(
-          widget.movieId ?? -1, dates?.first.date ?? "");
-    });
-
-    super.initState();
-  }
-
-  @override
-  void didChangeDependencies() {
-    dates?.forEach((date) {
-      date.isSelected = false;
-    });
-
-    super.didChangeDependencies();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,150 +31,131 @@ class _MovieChooseTimePageState extends State<MovieChooseTimePage> {
                   ),
             ),
       ),
-      child: Scaffold(
-        appBar: AppBar(
-          leading: GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: const Icon(Icons.chevron_left),
+      child: ChangeNotifierProvider<ChooseTimeBloc>(
+        create: (context) => ChooseTimeBloc(movieId),
+        child: Scaffold(
+          appBar: AppBar(
+            leading: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: const Icon(Icons.chevron_left),
+            ),
           ),
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              MovieChooseDateView(
-                dates: dates ?? [],
-                onTapDate: (index) {
-                  setState(() {
-                    dates?.forEach((date) {
-                      date.isSelected = false;
-                    });
-                    dates?[index].isSelected = true;
-                  });
-                  // _getCinemaDayTimeslot(
-                  //   widget.movieId ?? -1,
-                  //   dates?[index].date ?? "",
-                  // );
-                  _getCinemaDayTimeslotFromDatabase(
-                    widget.movieId ?? -1,
-                    dates?[index].date ?? "",
-                  );
-                  selectedDate = dates?[index].date;
-                },
-              ),
-              ChooseItemGridSectionView(
-                cinemas: cinemas,
-                onTapTimeslot: (timeslotId, movieTime) {
-                  List<CinemaVO> selectedCinemas = cinemas?.map((each) {
-                        each.timeslots?.forEach((element) {
-                          if (element.cinemaTimeslotId == timeslotId) {
-                            element.isSelected = true;
-                          } else {
-                            element.isSelected = false;
-                          }
-                        });
-                        return each;
-                      }).toList() ??
-                      [];
-                  setState(() {
-                    cinemas = selectedCinemas;
-                  });
-                  selectedTimeslotId = timeslotId;
-                  this.movieTime = movieTime;
-                  cinemas?.forEach((cinema) {
-                    cinema.timeslots?.forEach((element) {
-                      if (element.cinemaTimeslotId == timeslotId) {
-                        this.cinema = cinema.cinema;
-                        cinemaId = cinema.cinemaId;
-                      }
-                    });
-                  });
-                },
-              ),
-              const SizedBox(
-                height: MARGIN_LARGE,
-              ),
-              PrimaryButtonView(
-                "Next",
-                () {
-                  _navigateToMovieSeatsPage(
-                    context,
-                    selectedDate,
-                    selectedTimeslotId,
-                    widget.movieTitle ?? "",
-                    movieTime ?? "",
-                    cinema ?? "",
-                  );
-                },
-              )
-            ],
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                Selector<ChooseTimeBloc, int?>(
+                  selector: (context, bloc) => bloc.selectedDateIndex,
+                  builder: (context, selectedDateIndex, child) =>
+                      MovieChooseDateView(
+                    index: selectedDateIndex ?? 0,
+                    onTapDate: (index) {
+                      ChooseTimeBloc bloc = Provider.of(context, listen: false);
+                      bloc.onTapDate(index);
+                    },
+                  ),
+                ),
+                Selector<ChooseTimeBloc, int?>(
+                  selector: (context, bloc) => bloc.selectedTimeslotId,
+                  builder: (context, selectedTimeslotId, child) =>
+                      ChooseItemGridSectionView(
+                    selectedTimeslotId: selectedTimeslotId,
+                    onTapTimeslot: (timeslotId, movieTime) {
+                      ChooseTimeBloc bloc = Provider.of(context, listen: false);
+                      bloc.onTapTimeslot(timeslotId, movieTime);
+                    },
+                  ),
+                ),
+                const SizedBox(
+                  height: MARGIN_LARGE,
+                ),
+                Builder(
+                  builder: (context) => PrimaryButtonView(
+                    "Next",
+                    () {
+                      _navigateToMovieSeatsPage(context);
+                    },
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _navigateToMovieSeatsPage(BuildContext context, String? date,
-      int? timeslotId, String movieTitle, String movieTime, String cinema) {
-    if (date != null && timeslotId != null) {
+  void _navigateToMovieSeatsPage(BuildContext context) {
+    ChooseTimeBloc bloc = Provider.of(context, listen: false);
+    if (bloc.selectedTimeslotId != null &&
+        bloc.selectedDate != null &&
+        bloc.movieTime != null &&
+        bloc.cinema != null &&
+        bloc.cinemaId != null) {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => MovieSeatsPage(
-            timeslotId: selectedTimeslotId ?? -1,
-            date: selectedDate ?? "",
-            movieTitle: movieTitle,
-            movieTime: movieTime,
-            cinema: cinema,
-            movieId: widget.movieId ?? -1,
-            cinemaId: cinemaId ?? -1,
-            moviePosterUrl: widget.moviePosterUrl,
+            timeslotId: bloc.selectedTimeslotId!,
+            date: bloc.selectedDate!,
+            movieTitle: movieTitle ?? "",
+            movieTime: bloc.movieTime!,
+            cinema: bloc.cinema!,
+            movieId: movieId ?? -1,
+            cinemaId: bloc.cinemaId!,
+            moviePosterUrl: moviePosterUrl,
           ),
         ),
       );
     }
   }
-
-  // void _getCinemaDayTimeslot(int movieId, String date) {
-  //   movieBookingModel.getCinemaDayTimeslot(movieId, date).then((cinemas) {
-  //     setState(() {
-  //       this.cinemas = cinemas;
-  //     });
-  //   }).catchError((error) => debugPrint(error.toString()));
-  // }
-
-  void _getCinemaDayTimeslotFromDatabase(int movieId, String date) {
-    movieBookingModel.getCinemasFromDatabase(movieId, date).listen((cinemas) {
-      setState(() {
-        this.cinemas = cinemas;
-      });
-    }).onError((error) => debugPrint(error.toString()));
-  }
 }
 
 class ChooseItemGridSectionView extends StatelessWidget {
-  final List<CinemaVO>? cinemas;
+  final int? selectedTimeslotId;
   final Function(int, String) onTapTimeslot;
 
   ChooseItemGridSectionView(
-      {required this.cinemas, required this.onTapTimeslot});
+      {required this.selectedTimeslotId, required this.onTapTimeslot});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(
-        top: MARGIN_MEDIUM_2,
-        left: MARGIN_MEDIUM_2,
-        right: MARGIN_MEDIUM_2,
-      ),
-      child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: cinemas
-                  ?.map((cinema) => ChooseItemGridView(
-                        cinema: cinema,
-                        onTapTimeslot: onTapTimeslot,
-                      ))
-                  .toList() ??
-              []),
+    return Selector<ChooseTimeBloc, List<CinemaVO>?>(
+      selector: (context, bloc) => bloc.cinemas,
+      builder: (context, cinemas, child) {
+        if (selectedTimeslotId != null) {
+          cinemas?.forEach((each) {
+            each.timeslots?.forEach((element) {
+              if (element.cinemaTimeslotId == selectedTimeslotId) {
+                element.isSelected = true;
+              } else {
+                element.isSelected = false;
+              }
+            });
+          });
+        } else {
+          cinemas?.forEach((each) {
+            each.timeslots?.forEach((element) {
+              element.isSelected = false;
+            });
+          });
+        }
+        return Container(
+          padding: const EdgeInsets.only(
+            top: MARGIN_MEDIUM_2,
+            left: MARGIN_MEDIUM_2,
+            right: MARGIN_MEDIUM_2,
+          ),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: cinemas
+                      ?.map((cinema) => ChooseItemGridView(
+                            cinema: cinema,
+                            onTapTimeslot: onTapTimeslot,
+                          ))
+                      .toList() ??
+                  []),
+        );
+      },
     );
   }
 }
@@ -296,49 +233,62 @@ class ChooseItemGridView extends StatelessWidget {
 }
 
 class MovieChooseDateView extends StatelessWidget {
-  final List<DateVO> dates;
   final Function(int) onTapDate;
+  final int index;
 
-  MovieChooseDateView({required this.dates, required this.onTapDate});
+  MovieChooseDateView({required this.index, required this.onTapDate});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       height: MOVIE_TIME_DATE_LIST_HEIGHT,
       color: PRIMARY_COLOR,
-      child: ListView.separated(
-        padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-        scrollDirection: Axis.horizontal,
-        separatorBuilder: (context, index) {
-          return const SizedBox(width: MARGIN_MEDIUM_2);
-        },
-        itemCount: dates.length,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-            onTap: () => onTapDate(index),
-            child: Column(
-              children: [
-                Text(
-                  dates[index].day,
-                  style: TextStyle(
-                    color: dates[index].isSelected ? Colors.white : Colors.grey,
-                    fontSize: TEXT_REGULAR_3X,
-                  ),
+      child: Selector<ChooseTimeBloc, List<DateVO>?>(
+        builder: (context, dates, child) {
+          dates?.forEach((element) {
+            element.isSelected = false;
+          });
+          dates?[index].isSelected = true;
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
+            scrollDirection: Axis.horizontal,
+            separatorBuilder: (context, index) {
+              return const SizedBox(width: MARGIN_MEDIUM_2);
+            },
+            itemCount: dates?.length ?? 0,
+            itemBuilder: (context, index) {
+              return GestureDetector(
+                onTap: () => onTapDate(index),
+                child: Column(
+                  children: [
+                    Text(
+                      dates?[index].day ?? "",
+                      style: TextStyle(
+                        color: dates?[index].isSelected == true
+                            ? Colors.white
+                            : Colors.grey,
+                        fontSize: TEXT_REGULAR_3X,
+                      ),
+                    ),
+                    const SizedBox(
+                      height: MARGIN_MEDIUM,
+                    ),
+                    Text(
+                      dates?[index].daysOfMonth ?? "",
+                      style: TextStyle(
+                        color: dates?[index].isSelected == true
+                            ? Colors.white
+                            : Colors.grey,
+                        fontSize: TEXT_REGULAR_3X,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(
-                  height: MARGIN_MEDIUM,
-                ),
-                Text(
-                  dates[index].daysOfMonth,
-                  style: TextStyle(
-                    color: dates[index].isSelected ? Colors.white : Colors.grey,
-                    fontSize: TEXT_REGULAR_3X,
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           );
         },
+        selector: (context, bloc) => bloc.dates,
       ),
     );
   }
