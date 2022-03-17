@@ -1,6 +1,4 @@
 import 'package:the_movie_booking_app/data/vos/date_vo.dart';
-import 'package:the_movie_booking_app/data/vos/movie_seat_vo.dart';
-import 'package:the_movie_booking_app/utils/constants.dart';
 
 // List<MovieSeatVO> dummyMovieSeats = [
 //   MovieSeatVO(title: "A", type: SEAT_TYPE_TEXT),

@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:the_movie_booking_app/data/models/movie_booking_model.dart';
-import 'package:the_movie_booking_app/data/models/movie_booking_model_impl.dart';
+import 'package:provider/provider.dart';
+import 'package:the_movie_booking_app/blocs/movie_seats_bloc.dart';
 import 'package:the_movie_booking_app/data/vos/movie_seat_vo.dart';
 import 'package:the_movie_booking_app/resources/colors.dart';
 import 'package:the_movie_booking_app/resources/dimens.dart';
-import 'package:the_movie_booking_app/utils/constants.dart';
 import 'package:the_movie_booking_app/viewitems/movie_seat_item_view.dart';
 import 'package:the_movie_booking_app/widgets/dotted_line_section_view.dart';
 import 'package:the_movie_booking_app/widgets/primary_button_view.dart';
 
 import 'movie_snack_page.dart';
 
-class MovieSeatsPage extends StatefulWidget {
+class MovieSeatsPage extends StatelessWidget {
   final String date;
   final int timeslotId;
   final String movieTitle;
@@ -33,140 +32,101 @@ class MovieSeatsPage extends StatefulWidget {
   });
 
   @override
-  State<MovieSeatsPage> createState() => _MovieSeatsPageState();
-}
-
-class _MovieSeatsPageState extends State<MovieSeatsPage> {
-  /// state variables
-  List<MovieSeatVO>? movieSeats;
-  int? countInARow;
-  int tickets = 0;
-  List<String> seats = [];
-  double totalPrice = 0;
-
-  MovieBookingModel movieBookingModel = MovieBookingModelImpl();
-
-  @override
-  void initState() {
-    movieBookingModel
-        .getCinemaSeatingPlan(widget.timeslotId, widget.date)
-        .then((value) {
-      setState(() {
-        movieSeats = value?[0] as List<MovieSeatVO>;
-        countInARow = value?[1] as int;
-      });
-    }).catchError((error) => debugPrint(error.toString()));
-
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.chevron_left),
+    return ChangeNotifierProvider(
+      create: (context) => MovieSeatsBloc(timeslotId, date),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: const Icon(Icons.chevron_left),
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        child: Container(
-          alignment: Alignment.center,
-          child: Column(
-            children: [
-              MovieNameTimeAndCinemaSectionView(
-                movieDate: widget.date,
-                cinema: widget.cinema,
-                movieTime: widget.movieTime,
-                movieTitle: widget.movieTitle,
-              ),
-              const SizedBox(height: MARGIN_LARGE),
-              MovieSeatsSectionView(
-                movieSeats: movieSeats,
-                countInARow: countInARow,
-                onTapMovieSeat: (seat) {
-                  if (seat?.type == SEAT_TYPE_AVAILABLE) {
-                    List<MovieSeatVO>? temp = movieSeats;
-                    temp?.forEach((each) {
-                      if (each.id == seat?.id && each.symbol == seat?.symbol) {
-                        each.isSelected =
-                            (seat?.isSelected == false) ? true : false;
-                      }
-                    });
-
-                    if (seat?.isSelected == true) {
-                      seats.add(seat?.seatName ?? "");
-                      totalPrice += seat?.price ?? 0;
-                    } else {
-                      seats.remove(seat?.seatName ?? "");
-                      totalPrice -= seat?.price ?? 0;
-                    }
-
-                    setState(() {
-                      movieSeats = temp;
-                    });
-                  }
-                },
-              ),
-              const SizedBox(height: MARGIN_MEDIUM_2),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-                child: MovieSeatGlossarySectionView(),
-              ),
-              const SizedBox(height: MARGIN_LARGE),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-                child: DottedLineSectionView(),
-              ),
-              const SizedBox(height: MARGIN_LARGE),
-              NumberOfSeatAndTicketSectionView(
-                tickets: seats,
-              ),
-              const SizedBox(
-                height: MARGIN_XLARGE,
-              ),
-              PrimaryButtonView(
-                "Buy ticket for \$ $totalPrice",
-                () => _navigateToMovieSnackPage(
-                  context,
-                  totalPrice,
+        body: SingleChildScrollView(
+          child: Container(
+            alignment: Alignment.center,
+            child: Column(
+              children: [
+                MovieNameTimeAndCinemaSectionView(
+                  movieDate: date,
+                  cinema: cinema,
+                  movieTime: movieTime,
+                  movieTitle: movieTitle,
                 ),
-              ),
-            ],
+                const SizedBox(height: MARGIN_LARGE),
+                Selector<MovieSeatsBloc, MovieSeatVO?>(
+                  selector: (context, bloc) => bloc.selectedSeat,
+                  builder: (context, _, child) => MovieSeatsSectionView(
+                    onTapMovieSeat: (seat) {
+                      MovieSeatsBloc bloc = Provider.of(context, listen: false);
+                      bloc.onTapMovieSeat(seat);
+                    },
+                  ),
+                ),
+                const SizedBox(height: MARGIN_MEDIUM_2),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
+                  child: MovieSeatGlossarySectionView(),
+                ),
+                const SizedBox(height: MARGIN_LARGE),
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
+                  child: DottedLineSectionView(),
+                ),
+                const SizedBox(height: MARGIN_LARGE),
+                Selector<MovieSeatsBloc, MovieSeatVO?>(
+                  selector: (context, bloc) => bloc.selectedSeat,
+                  builder: (context, _, child) =>
+                      Selector<MovieSeatsBloc, List<String>>(
+                    selector: (context, bloc) => bloc.selectedSeats,
+                    builder: (context, selectedSeats, child) =>
+                        NumberOfSeatAndTicketSectionView(
+                      tickets: selectedSeats,
+                    ),
+                  ),
+                ),
+                const SizedBox(
+                  height: MARGIN_XLARGE,
+                ),
+                Selector<MovieSeatsBloc, double>(
+                  selector: (context, bloc) => bloc.totalPrice,
+                  builder: (context, totalPrice, child) => PrimaryButtonView(
+                    "Buy ticket for \$ $totalPrice",
+                    () => _navigateToMovieSnackPage(context),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _navigateToMovieSnackPage(
-      BuildContext context, double ticketsPrice) {
-    if (ticketsPrice > 0.0) {
+  void _navigateToMovieSnackPage(BuildContext context) {
+    MovieSeatsBloc bloc = Provider.of(context, listen: false);
+    if (bloc.totalPrice > 0.0) {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => MovieSnackPage(
-            ticketsPrice: ticketsPrice,
-            cinemaId: widget.cinemaId,
-            row: movieSeats
+            ticketsPrice: bloc.totalPrice,
+            cinemaId: cinemaId,
+            row: bloc.movieSeats
                     ?.where((each) => each.isSelected == true)
                     .map((seat) => seat.symbol)
                     .toSet()
                     .join(", ") ??
                 "",
-            movieId: widget.movieId,
-            seatNumbers: movieSeats
-                    ?.where((each) => each.isSelected == true)
-                    .map((seat) => seat.seatName)
-                    .join(", ") ??
-                "",
-            cinemaDayTimeslotId: widget.timeslotId,
-            bookingDate: widget.date,
-            moviePosterUrl: widget.moviePosterUrl,
-            movieTitle: widget.movieTitle,
-            cinema: widget.cinema,
+            movieId: movieId,
+            seatNumbers: bloc.selectedSeats.join(", "),
+            cinemaDayTimeslotId: timeslotId,
+            bookingDate: date,
+            moviePosterUrl: moviePosterUrl,
+            movieTitle: movieTitle,
+            cinema: cinema,
           ),
         ),
       );
@@ -269,32 +229,46 @@ class MovieSeatGlossaryView extends StatelessWidget {
 }
 
 class MovieSeatsSectionView extends StatelessWidget {
-  final List<MovieSeatVO>? movieSeats;
-  final int? countInARow;
   final Function(MovieSeatVO?) onTapMovieSeat;
 
   MovieSeatsSectionView({
-    required this.movieSeats,
-    required this.countInARow,
     required this.onTapMovieSeat,
   });
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      itemCount: movieSeats?.length ?? 0,
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: countInARow ?? 1,
-        childAspectRatio: 1,
+    return Selector<MovieSeatsBloc, List<MovieSeatVO>?>(
+      selector: (context, bloc) => bloc.movieSeats,
+      builder: (context, seats, child) => Selector<MovieSeatsBloc, int?>(
+        selector: (context, bloc) => bloc.countInARow,
+        builder: (context, seatCountInARow, child) {
+          // if (selectedSeat != null) {
+          //   seats?.forEach((each) {
+          //     if (each.id == selectedSeat?.id &&
+          //         each.symbol == selectedSeat?.symbol) {
+          //       each.isSelected =
+          //           (selectedSeat?.isSelected == false) ? true : false;
+          //     }
+          //   });
+          // }
+
+          return GridView.builder(
+            itemCount: seats?.length ?? 0,
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: seatCountInARow ?? 1,
+              childAspectRatio: 1,
+            ),
+            itemBuilder: (context, index) {
+              return MovieSeatItemView(
+                movieSeat: seats?[index],
+                onTapMovieSeat: onTapMovieSeat,
+              );
+            },
+          );
+        },
       ),
-      itemBuilder: (context, index) {
-        return MovieSeatItemView(
-          movieSeat: movieSeats?[index],
-          onTapMovieSeat: onTapMovieSeat,
-        );
-      },
     );
   }
 }
