@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:the_movie_booking_app/data/models/movie_booking_model.dart';
-import 'package:the_movie_booking_app/data/models/movie_booking_model_impl.dart';
+import 'package:provider/provider.dart';
+import 'package:the_movie_booking_app/blocs/snack_bloc.dart';
 import 'package:the_movie_booking_app/data/vos/payment_vo.dart';
 import 'package:the_movie_booking_app/data/vos/snack_req_vo.dart';
 import 'package:the_movie_booking_app/data/vos/snack_vo.dart';
@@ -10,7 +10,7 @@ import 'package:the_movie_booking_app/resources/dimens.dart';
 import 'package:the_movie_booking_app/resources/strings.dart';
 import 'package:the_movie_booking_app/widgets/primary_button_view.dart';
 
-class MovieSnackPage extends StatefulWidget {
+class MovieSnackPage extends StatelessWidget {
   final double ticketsPrice;
   final String row;
   final int movieId;
@@ -36,133 +36,117 @@ class MovieSnackPage extends StatefulWidget {
   });
 
   @override
-  State<MovieSnackPage> createState() => _MovieSnackPageState();
-}
-
-class _MovieSnackPageState extends State<MovieSnackPage> {
-  /// state variables
-  List<PaymentVO>? paymentMethods;
-  List<SnackVO>? snacks;
-  double subTotal = 0;
-
-  MovieBookingModel movieBookingModel = MovieBookingModelImpl();
-
-  @override
-  void initState() {
-    movieBookingModel.getSnacksFromDatabase().listen((snackList) {
-      setState(() {
-        snacks = snackList;
-        subTotal = widget.ticketsPrice;
-      });
-    }).onError((error) => debugPrint(error.toString()));
-
-    movieBookingModel
-        .getPaymentMethodsFromDatabase()
-        .listen((value) => setState(() => paymentMethods = value))
-        .onError((error) => debugPrint(error.toString()));
-
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: const Icon(Icons.chevron_left),
+    return ChangeNotifierProvider(
+      create: (context) => SnackBloc(ticketsPrice),
+      child: Scaffold(
+        appBar: AppBar(
+          leading: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: const Icon(Icons.chevron_left),
+          ),
         ),
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ComboSetSectionView(
-              snacks: snacks,
-              onDecrease: (snack) {
-                setState(() {
-                  if ((snack?.quantity ?? 0) > 0) {
-                    subTotal -= snack?.price ?? 0;
-                  }
-                  snacks?.forEach((each) {
-                    if (each.id == snack?.id) {
-                      if ((each.quantity) > 0) {
-                        each.quantity = (each.quantity) - 1;
-                      }
-                    }
-                  });
-                });
-              },
-              onIncrease: (snack) {
-                setState(() {
-                  snacks?.forEach((each) {
-                    if (each.id == snack?.id) {
-                      each.quantity = (each.quantity) + 1;
-                    }
-                  });
-                  subTotal += snack?.price ?? 0;
-                });
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-              child: PromoCodeAndSubTotalSectionView(
-                subTotal: subTotal,
-              ),
-            ),
-            const SizedBox(
-              height: MARGIN_LARGE,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-              child: PaymentMethodSectionView(
-                paymentMethods: paymentMethods,
-                onTapPayment: (paymentId) {
-                  setState(() {
-                    paymentMethods?.forEach((each) {
-                      if (each.id == paymentId) {
-                        each.isSelected = true;
-                      } else {
-                        each.isSelected = false;
-                      }
-                    });
-                  });
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Selector<SnackBloc, bool>(
+                selector: (context, bloc) => bloc.snacksQtyTrigger,
+                builder: (context, _, child) {
+                  return Selector<SnackBloc, List<SnackVO>?>(
+                    selector: (context, bloc) => bloc.snacks,
+                    builder: (context, snacks, child) {
+                      SnackBloc bloc = Provider.of(context, listen: false);
+                      return ComboSetSectionView(
+                        snacks: snacks,
+                        onDecrease: (snack) {
+                          bloc.onTapSnackQtyDecrease(snack);
+                        },
+                        onIncrease: (snack) {
+                          bloc.onTapSnackQtyIncrease(snack);
+                        },
+                      );
+                    },
+                  );
                 },
               ),
-            ),
-            Container(
-              margin: const EdgeInsets.symmetric(vertical: MARGIN_LARGE),
-              child: PrimaryButtonView(
-                "Pay \$ $subTotal",
-                () => _navigateToChooseCardPage(context, subTotal.toString()),
-                isElevated: true,
+              Selector<SnackBloc, double>(
+                selector: (context, bloc) => bloc.subTotal,
+                builder: (context, subTotal, child) {
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
+                    child: PromoCodeAndSubTotalSectionView(
+                      subTotal: subTotal,
+                    ),
+                  );
+                },
               ),
-            ),
-          ],
+              const SizedBox(
+                height: MARGIN_LARGE,
+              ),
+              Selector<SnackBloc, bool>(
+                selector: (context, bloc) => bloc.selectPaymentTrigger,
+                builder: (context, _, child) {
+                  return Selector<SnackBloc, List<PaymentVO>?>(
+                    selector: (context, bloc) => bloc.paymentMethods,
+                    builder: (context, paymentMethods, child) {
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: MARGIN_MEDIUM_2),
+                        child: PaymentMethodSectionView(
+                          paymentMethods: paymentMethods,
+                          onTapPayment: (paymentId) {
+                            SnackBloc bloc =
+                                Provider.of(context, listen: false);
+                            bloc.onTapPayment(paymentId);
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+              Selector<SnackBloc, double>(
+                selector: (context, bloc) => bloc.subTotal,
+                builder: (context, subTotal, child) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(vertical: MARGIN_LARGE),
+                    child: PrimaryButtonView(
+                      "Pay \$ $subTotal",
+                      () => _navigateToChooseCardPage(context),
+                      isElevated: true,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _navigateToChooseCardPage(BuildContext context, String totalAmount) {
+  void _navigateToChooseCardPage(BuildContext context) {
+    SnackBloc bloc = Provider.of(context, listen: false);
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ChooseCardPage(
-          totalAmount: totalAmount,
-          snacks: snacks
+          totalAmount: bloc.subTotal.toString(),
+          snacks: bloc.snacks
                   ?.map((snack) => SnackReqVO(snack.id, snack.quantity))
                   .toList() ??
               [],
-          row: widget.row,
-          movieId: widget.movieId,
-          cinemaId: widget.cinemaId,
-          cinemaDayTimeslotId: widget.cinemaDayTimeslotId,
-          bookingDate: widget.bookingDate,
-          seatNumbers: widget.seatNumbers,
-          movieTitle: widget.movieTitle,
-          moviePosterUrl: widget.moviePosterUrl,
-          cinema: widget.cinema,
+          row: row,
+          movieId: movieId,
+          cinemaId: cinemaId,
+          cinemaDayTimeslotId: cinemaDayTimeslotId,
+          bookingDate: bookingDate,
+          seatNumbers: seatNumbers,
+          movieTitle: movieTitle,
+          moviePosterUrl: moviePosterUrl,
+          cinema: cinema,
         ),
       ),
     );
@@ -245,9 +229,9 @@ class PaymentMethodItemView extends StatelessWidget {
           children: [
             Icon(
               Icons.payment,
-                color: (paymentMethod?.isSelected == true)
-                    ? Colors.white
-                    : PAYMENT_METHODS_ICON_COLOR,
+              color: (paymentMethod?.isSelected == true)
+                  ? Colors.white
+                  : PAYMENT_METHODS_ICON_COLOR,
             ),
             const SizedBox(
               width: MARGIN_LARGE,
