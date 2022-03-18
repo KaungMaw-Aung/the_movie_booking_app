@@ -101,14 +101,23 @@ class MovieDetailsPage extends StatelessWidget {
     MovieDetailsBloc bloc = Provider.of(context, listen: false);
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => MovieChooseTimePage(
-          movieId: bloc.movie?.id ?? -1,
-          movieTitle: bloc.movie?.title ?? "",
-          moviePosterUrl: bloc.moviePosterUrl ?? "",
-        ),
-      ),
-    );
+      PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) {
+        return MovieChooseTimePage(
+                movieId: bloc.movie?.id ?? -1,
+                movieTitle: bloc.movie?.title ?? "",
+                moviePosterUrl: bloc.moviePosterUrl ?? "",
+              );
+      },
+      transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+      // MaterialPageRoute(
+      //   builder: (context) => MovieChooseTimePage(
+      //     movieId: bloc.movie?.id ?? -1,
+      //     movieTitle: bloc.movie?.title ?? "",
+      //     moviePosterUrl: bloc.moviePosterUrl ?? "",
+      //   ),
+      // ),
+    ));
   }
 
   _backToHomePage(BuildContext context) {
