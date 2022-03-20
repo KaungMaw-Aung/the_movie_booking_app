@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:the_movie_booking_app/blocs/ticket_bloc.dart';
 import 'package:the_movie_booking_app/data/vos/voucher_vo.dart';
 import 'package:the_movie_booking_app/network/api_constants.dart';
 import 'package:the_movie_booking_app/pages/home_page.dart';
@@ -25,32 +27,42 @@ class TicketPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () => _navigateToHome(context),
-          child: const Icon(Icons.close),
-        ),
+    return ChangeNotifierProvider(
+      create: (context) => TicketBloc(
+        voucher: voucher,
+        moviePosterUrl: moviePosterUrl,
+        movieTitle: movieTitle,
+        cinema: cinema,
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          alignment: Alignment.center,
-          child: Column(
-            children: [
-              TicketHeaderView(),
-              const SizedBox(
-                height: MARGIN_MEDIUM_2,
-              ),
-              TicketSectionView(
-                voucher: voucher,
-                cinema: cinema,
-                moviePosterUrl: moviePosterUrl,
-                movieTitle: movieTitle,
-              ),
-              const SizedBox(
-                height: MARGIN_MEDIUM_2,
-              ),
-            ],
+      child: Scaffold(
+        appBar: AppBar(
+          leading: GestureDetector(
+            onTap: () => _navigateToHome(context),
+            child: const Icon(Icons.close),
+          ),
+        ),
+        body: SingleChildScrollView(
+          child: Container(
+            alignment: Alignment.center,
+            child: Column(
+              children: [
+                TicketHeaderView(),
+                const SizedBox(
+                  height: MARGIN_MEDIUM_2,
+                ),
+                Selector<TicketBloc, VoucherVO?>(
+                  selector: (context, bloc) => bloc.voucher,
+                  builder: (context, voucher, child) {
+                    return TicketSectionView(
+                        voucher: voucher
+                    );
+                  },
+                ),
+                const SizedBox(
+                  height: MARGIN_MEDIUM_2,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -68,16 +80,8 @@ class TicketPage extends StatelessWidget {
 
 class TicketSectionView extends StatelessWidget {
   final VoucherVO? voucher;
-  final String moviePosterUrl;
-  final String movieTitle;
-  final String cinema;
 
-  TicketSectionView({
-    required this.voucher,
-    required this.moviePosterUrl,
-    required this.movieTitle,
-    required this.cinema,
-  });
+  TicketSectionView({required this.voucher});
 
   @override
   Widget build(BuildContext context) {
@@ -94,17 +98,27 @@ class TicketSectionView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TicketMoviePosterView(
-              moviePosterUrl: moviePosterUrl,
+            Selector<TicketBloc, String>(
+              selector: (context, bloc) => bloc.moviePosterUrl,
+              builder: (context, posterUrl, child) {
+                return TicketMoviePosterView(
+                  moviePosterUrl: posterUrl,
+                );
+              },
             ),
             const SizedBox(
               height: MARGIN_MEDIUM,
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: MARGIN_MEDIUM_2),
-              child: MovieTitleTextView(
-                movieTitle: movieTitle,
-              ),
+            Selector<TicketBloc, String>(
+              selector: (context, bloc) => bloc.movieTitle,
+              builder: (context, movieTitle, child) {
+                return Padding(
+                  padding: const EdgeInsets.only(left: MARGIN_MEDIUM_2),
+                  child: MovieTitleTextView(
+                    movieTitle: movieTitle,
+                  ),
+                );
+              },
             ),
             // Text(),
             const SizedBox(
@@ -117,7 +131,12 @@ class TicketSectionView extends StatelessWidget {
             TicketInfoView(SHOWTIME_DATE,
                 "${voucher?.timeslot?.movieTime ?? ""} - ${voucher?.bookingDate ?? ""}"),
             const SizedBox(height: MARGIN_LARGE),
-            TicketInfoView(THEATER, cinema),
+            Selector<TicketBloc, String>(
+              selector: (context, bloc) => bloc.cinema,
+              builder: (context, cinema, child) {
+                return TicketInfoView(THEATER, cinema);
+              },
+            ),
             const SizedBox(height: MARGIN_LARGE),
             TicketInfoView(SCREEN, "2"),
             const SizedBox(height: MARGIN_LARGE),
