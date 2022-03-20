@@ -9,8 +9,6 @@ class SnackBloc extends ChangeNotifier {
   List<PaymentVO>? paymentMethods;
   List<SnackVO>? snacks;
   double subTotal = 0;
-  bool selectPaymentTrigger = false;
-  bool snacksQtyTrigger = false;
 
   /// Model
   MovieBookingModel movieBookingModel = MovieBookingModelImpl();
@@ -31,14 +29,15 @@ class SnackBloc extends ChangeNotifier {
   }
 
   void onTapPayment(int paymentId) {
-    paymentMethods?.forEach((each) {
+    paymentMethods = paymentMethods?.map((each) {
       if (each.id == paymentId) {
         each.isSelected = true;
       } else {
         each.isSelected = false;
       }
-    });
-    selectPaymentTrigger = !selectPaymentTrigger;
+      return each;
+    }).toList();
+
     notifyListeners();
   }
 
@@ -46,25 +45,27 @@ class SnackBloc extends ChangeNotifier {
     if ((snack?.quantity ?? 0) > 0) {
       subTotal -= snack?.price ?? 0;
     }
-    snacks?.forEach((each) {
+    snacks = snacks?.map((each) {
       if (each.id == snack?.id) {
         if ((each.quantity) > 0) {
           each.quantity = (each.quantity) - 1;
         }
       }
-    });
-    snacksQtyTrigger = !snacksQtyTrigger;
+      return each;
+    }).toList();
+
     notifyListeners();
   }
 
   void onTapSnackQtyIncrease(SnackVO? snack) {
-    snacks?.forEach((each) {
+    subTotal += snack?.price ?? 0;
+    snacks = snacks?.map((each) {
       if (each.id == snack?.id) {
         each.quantity = (each.quantity) + 1;
       }
-    });
-    subTotal += snack?.price ?? 0;
-    snacksQtyTrigger = !snacksQtyTrigger;
+      return each;
+    }).toList();
+
     notifyListeners();
   }
 

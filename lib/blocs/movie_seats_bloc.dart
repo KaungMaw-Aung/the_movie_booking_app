@@ -26,25 +26,22 @@ class MovieSeatsBloc extends ChangeNotifier {
 
   void onTapMovieSeat(MovieSeatVO? selectedSeat) {
     if (selectedSeat?.type == SEAT_TYPE_AVAILABLE) {
-      /// for unselecting seat
-      if (this.selectedSeat == selectedSeat) {
-        this.selectedSeat = null;
-      } else {
-        this.selectedSeat = selectedSeat;
-      }
-
-      movieSeats?.forEach((each) {
+      movieSeats = movieSeats?.map((each) {
         if (each.id == selectedSeat?.id &&
             each.symbol == selectedSeat?.symbol) {
           each.isSelected = (selectedSeat?.isSelected == false) ? true : false;
         }
-      });
+        return each;
+      }).toList();
 
+      var temp = selectedSeats.map((e) => e).toList();
       if (selectedSeat?.isSelected == true) {
-        selectedSeats.add(selectedSeat?.seatName ?? "");
+        temp.add(selectedSeat?.seatName ?? "");
+        selectedSeats = temp;
         totalPrice += selectedSeat?.price ?? 0;
       } else {
-        selectedSeats.remove(selectedSeat?.seatName ?? "");
+        temp.remove(selectedSeat?.seatName ?? "");
+        selectedSeats = temp;
         totalPrice -= selectedSeat?.price ?? 0;
       }
       notifyListeners();

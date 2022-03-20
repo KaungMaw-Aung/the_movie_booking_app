@@ -54,9 +54,11 @@ class MovieSeatsPage extends StatelessWidget {
                   movieTitle: movieTitle,
                 ),
                 const SizedBox(height: MARGIN_LARGE),
-                Selector<MovieSeatsBloc, MovieSeatVO?>(
-                  selector: (context, bloc) => bloc.selectedSeat,
-                  builder: (context, _, child) => MovieSeatsSectionView(
+                Selector<MovieSeatsBloc, List<MovieSeatVO>?>(
+                  selector: (context, bloc) => bloc.movieSeats,
+                  shouldRebuild: (oldValue, newValue) => oldValue != newValue,
+                  builder: (context, seats, child) => MovieSeatsSectionView(
+                    seats: seats,
                     onTapMovieSeat: (seat) {
                       MovieSeatsBloc bloc = Provider.of(context, listen: false);
                       bloc.onTapMovieSeat(seat);
@@ -76,15 +78,12 @@ class MovieSeatsPage extends StatelessWidget {
                   child: DottedLineSectionView(),
                 ),
                 const SizedBox(height: MARGIN_LARGE),
-                Selector<MovieSeatsBloc, MovieSeatVO?>(
-                  selector: (context, bloc) => bloc.selectedSeat,
-                  builder: (context, _, child) =>
-                      Selector<MovieSeatsBloc, List<String>>(
-                    selector: (context, bloc) => bloc.selectedSeats,
-                    builder: (context, selectedSeats, child) =>
-                        NumberOfSeatAndTicketSectionView(
-                      tickets: selectedSeats,
-                    ),
+                Selector<MovieSeatsBloc, List<String>>(
+                  selector: (context, bloc) => bloc.selectedSeats,
+                  shouldRebuild: (oldValue, newValue) => oldValue != newValue,
+                  builder: (context, selectedSeats, child) =>
+                      NumberOfSeatAndTicketSectionView(
+                    tickets: selectedSeats,
                   ),
                 ),
                 const SizedBox(
@@ -229,46 +228,45 @@ class MovieSeatGlossaryView extends StatelessWidget {
 }
 
 class MovieSeatsSectionView extends StatelessWidget {
+  final List<MovieSeatVO>? seats;
   final Function(MovieSeatVO?) onTapMovieSeat;
 
   MovieSeatsSectionView({
+    required this.seats,
     required this.onTapMovieSeat,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Selector<MovieSeatsBloc, List<MovieSeatVO>?>(
-      selector: (context, bloc) => bloc.movieSeats,
-      builder: (context, seats, child) => Selector<MovieSeatsBloc, int?>(
-        selector: (context, bloc) => bloc.countInARow,
-        builder: (context, seatCountInARow, child) {
-          // if (selectedSeat != null) {
-          //   seats?.forEach((each) {
-          //     if (each.id == selectedSeat?.id &&
-          //         each.symbol == selectedSeat?.symbol) {
-          //       each.isSelected =
-          //           (selectedSeat?.isSelected == false) ? true : false;
-          //     }
-          //   });
-          // }
+    return Selector<MovieSeatsBloc, int?>(
+      selector: (context, bloc) => bloc.countInARow,
+      builder: (context, seatCountInARow, child) {
+        // if (selectedSeat != null) {
+        //   seats?.forEach((each) {
+        //     if (each.id == selectedSeat?.id &&
+        //         each.symbol == selectedSeat?.symbol) {
+        //       each.isSelected =
+        //           (selectedSeat?.isSelected == false) ? true : false;
+        //     }
+        //   });
+        // }
 
-          return GridView.builder(
-            itemCount: seats?.length ?? 0,
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: seatCountInARow ?? 1,
-              childAspectRatio: 1,
-            ),
-            itemBuilder: (context, index) {
-              return MovieSeatItemView(
-                movieSeat: seats?[index],
-                onTapMovieSeat: onTapMovieSeat,
-              );
-            },
-          );
-        },
-      ),
+        return GridView.builder(
+          itemCount: seats?.length ?? 0,
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: seatCountInARow ?? 1,
+            childAspectRatio: 1,
+          ),
+          itemBuilder: (context, index) {
+            return MovieSeatItemView(
+              movieSeat: seats?[index],
+              onTapMovieSeat: onTapMovieSeat,
+            );
+          },
+        );
+      },
     );
   }
 }

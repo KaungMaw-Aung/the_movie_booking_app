@@ -43,22 +43,25 @@ class MovieChooseTimePage extends StatelessWidget {
           body: SingleChildScrollView(
             child: Column(
               children: [
-                Selector<ChooseTimeBloc, int?>(
-                  selector: (context, bloc) => bloc.selectedDateIndex,
-                  builder: (context, selectedDateIndex, child) =>
-                      MovieChooseDateView(
-                    index: selectedDateIndex ?? 0,
-                    onTapDate: (index) {
-                      ChooseTimeBloc bloc = Provider.of(context, listen: false);
-                      bloc.onTapDate(index);
-                    },
-                  ),
-                ),
-                Selector<ChooseTimeBloc, int?>(
-                  selector: (context, bloc) => bloc.selectedTimeslotId,
-                  builder: (context, selectedTimeslotId, child) =>
+                Selector<ChooseTimeBloc, List<DateVO>?>(
+                    selector: (context, bloc) => bloc.dates,
+                    shouldRebuild: (oldValue, newValue) => oldValue != newValue,
+                    builder: (context, dates, child) {
+                      return MovieChooseDateView(
+                        dates: dates,
+                        onTapDate: (index) {
+                          ChooseTimeBloc bloc =
+                              Provider.of(context, listen: false);
+                          bloc.onTapDate(index);
+                        },
+                      );
+                    }),
+                Selector<ChooseTimeBloc, List<CinemaVO>?>(
+                  selector: (context, bloc) => bloc.cinemas,
+                  shouldRebuild: (oldValue, newValue) => oldValue != newValue,
+                  builder: (context, cinemas, child) =>
                       ChooseItemGridSectionView(
-                    selectedTimeslotId: selectedTimeslotId,
+                    cinemas: cinemas,
                     onTapTimeslot: (timeslotId, movieTime) {
                       ChooseTimeBloc bloc = Provider.of(context, listen: false);
                       bloc.onTapTimeslot(timeslotId, movieTime);
@@ -111,51 +114,31 @@ class MovieChooseTimePage extends StatelessWidget {
 }
 
 class ChooseItemGridSectionView extends StatelessWidget {
-  final int? selectedTimeslotId;
+  final List<CinemaVO>? cinemas;
   final Function(int, String) onTapTimeslot;
 
-  ChooseItemGridSectionView(
-      {required this.selectedTimeslotId, required this.onTapTimeslot});
+  ChooseItemGridSectionView({
+    required this.cinemas,
+    required this.onTapTimeslot,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Selector<ChooseTimeBloc, List<CinemaVO>?>(
-      selector: (context, bloc) => bloc.cinemas,
-      builder: (context, cinemas, child) {
-        if (selectedTimeslotId != null) {
-          cinemas?.forEach((each) {
-            each.timeslots?.forEach((element) {
-              if (element.cinemaTimeslotId == selectedTimeslotId) {
-                element.isSelected = true;
-              } else {
-                element.isSelected = false;
-              }
-            });
-          });
-        } else {
-          cinemas?.forEach((each) {
-            each.timeslots?.forEach((element) {
-              element.isSelected = false;
-            });
-          });
-        }
-        return Container(
-          padding: const EdgeInsets.only(
-            top: MARGIN_MEDIUM_2,
-            left: MARGIN_MEDIUM_2,
-            right: MARGIN_MEDIUM_2,
-          ),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: cinemas
-                      ?.map((cinema) => ChooseItemGridView(
-                            cinema: cinema,
-                            onTapTimeslot: onTapTimeslot,
-                          ))
-                      .toList() ??
-                  []),
-        );
-      },
+    return Container(
+      padding: const EdgeInsets.only(
+        top: MARGIN_MEDIUM_2,
+        left: MARGIN_MEDIUM_2,
+        right: MARGIN_MEDIUM_2,
+      ),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: cinemas
+                  ?.map((cinema) => ChooseItemGridView(
+                        cinema: cinema,
+                        onTapTimeslot: onTapTimeslot,
+                      ))
+                  .toList() ??
+              []),
     );
   }
 }
@@ -233,63 +216,53 @@ class ChooseItemGridView extends StatelessWidget {
 }
 
 class MovieChooseDateView extends StatelessWidget {
+  final List<DateVO>? dates;
   final Function(int) onTapDate;
-  final int index;
 
-  MovieChooseDateView({required this.index, required this.onTapDate});
+  MovieChooseDateView({required this.dates, required this.onTapDate});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MOVIE_TIME_DATE_LIST_HEIGHT,
-      color: PRIMARY_COLOR,
-      child: Selector<ChooseTimeBloc, List<DateVO>?>(
-        builder: (context, dates, child) {
-          dates?.forEach((element) {
-            element.isSelected = false;
-          });
-          dates?[index].isSelected = true;
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-            scrollDirection: Axis.horizontal,
-            separatorBuilder: (context, index) {
-              return const SizedBox(width: MARGIN_MEDIUM_2);
-            },
-            itemCount: dates?.length ?? 0,
-            itemBuilder: (context, index) {
-              return GestureDetector(
-                onTap: () => onTapDate(index),
-                child: Column(
-                  children: [
-                    Text(
-                      dates?[index].day ?? "",
-                      style: TextStyle(
-                        color: dates?[index].isSelected == true
-                            ? Colors.white
-                            : Colors.grey,
-                        fontSize: TEXT_REGULAR_3X,
-                      ),
+        height: MOVIE_TIME_DATE_LIST_HEIGHT,
+        color: PRIMARY_COLOR,
+        child: ListView.separated(
+          padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
+          scrollDirection: Axis.horizontal,
+          separatorBuilder: (context, index) {
+            return const SizedBox(width: MARGIN_MEDIUM_2);
+          },
+          itemCount: dates?.length ?? 0,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+              onTap: () => onTapDate(index),
+              child: Column(
+                children: [
+                  Text(
+                    dates?[index].day ?? "",
+                    style: TextStyle(
+                      color: dates?[index].isSelected == true
+                          ? Colors.white
+                          : Colors.grey,
+                      fontSize: TEXT_REGULAR_3X,
                     ),
-                    const SizedBox(
-                      height: MARGIN_MEDIUM,
+                  ),
+                  const SizedBox(
+                    height: MARGIN_MEDIUM,
+                  ),
+                  Text(
+                    dates?[index].daysOfMonth ?? "",
+                    style: TextStyle(
+                      color: dates?[index].isSelected == true
+                          ? Colors.white
+                          : Colors.grey,
+                      fontSize: TEXT_REGULAR_3X,
                     ),
-                    Text(
-                      dates?[index].daysOfMonth ?? "",
-                      style: TextStyle(
-                        color: dates?[index].isSelected == true
-                            ? Colors.white
-                            : Colors.grey,
-                        fontSize: TEXT_REGULAR_3X,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
-        selector: (context, bloc) => bloc.dates,
-      ),
-    );
+                  ),
+                ],
+              ),
+            );
+          },
+        ));
   }
 }

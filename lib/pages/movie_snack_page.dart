@@ -50,22 +50,18 @@ class MovieSnackPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Selector<SnackBloc, bool>(
-                selector: (context, bloc) => bloc.snacksQtyTrigger,
-                builder: (context, _, child) {
-                  return Selector<SnackBloc, List<SnackVO>?>(
-                    selector: (context, bloc) => bloc.snacks,
-                    builder: (context, snacks, child) {
-                      SnackBloc bloc = Provider.of(context, listen: false);
-                      return ComboSetSectionView(
-                        snacks: snacks,
-                        onDecrease: (snack) {
-                          bloc.onTapSnackQtyDecrease(snack);
-                        },
-                        onIncrease: (snack) {
-                          bloc.onTapSnackQtyIncrease(snack);
-                        },
-                      );
+              Selector<SnackBloc, List<SnackVO>?>(
+                selector: (context, bloc) => bloc.snacks,
+                shouldRebuild: (oldValue, newValue) => oldValue != newValue,
+                builder: (context, snacks, child) {
+                  SnackBloc bloc = Provider.of(context, listen: false);
+                  return ComboSetSectionView(
+                    snacks: snacks,
+                    onDecrease: (snack) {
+                      bloc.onTapSnackQtyDecrease(snack);
+                    },
+                    onIncrease: (snack) {
+                      bloc.onTapSnackQtyIncrease(snack);
                     },
                   );
                 },
@@ -85,25 +81,20 @@ class MovieSnackPage extends StatelessWidget {
               const SizedBox(
                 height: MARGIN_LARGE,
               ),
-              Selector<SnackBloc, bool>(
-                selector: (context, bloc) => bloc.selectPaymentTrigger,
-                builder: (context, _, child) {
-                  return Selector<SnackBloc, List<PaymentVO>?>(
-                    selector: (context, bloc) => bloc.paymentMethods,
-                    builder: (context, paymentMethods, child) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: MARGIN_MEDIUM_2),
-                        child: PaymentMethodSectionView(
-                          paymentMethods: paymentMethods,
-                          onTapPayment: (paymentId) {
-                            SnackBloc bloc =
-                                Provider.of(context, listen: false);
-                            bloc.onTapPayment(paymentId);
-                          },
-                        ),
-                      );
-                    },
+              Selector<SnackBloc, List<PaymentVO>?>(
+                selector: (context, bloc) => bloc.paymentMethods,
+                shouldRebuild: (oldValue, newValue) => oldValue != newValue,
+                builder: (context, paymentMethods, child) {
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
+                    child: PaymentMethodSectionView(
+                      paymentMethods: paymentMethods,
+                      onTapPayment: (paymentId) {
+                        SnackBloc bloc = Provider.of(context, listen: false);
+                        bloc.onTapPayment(paymentId);
+                      },
+                    ),
                   );
                 },
               ),

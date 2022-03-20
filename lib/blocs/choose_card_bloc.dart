@@ -9,7 +9,7 @@ import 'package:the_movie_booking_app/network/responses/checkout_request.dart';
 class ChooseCardBloc extends ChangeNotifier {
   /// States
   List<CardVO>? cards;
-  int cardIndex = 0;
+  int selectedCardIndex = 0;
 
   /// Model
   MovieBookingModel movieBookingModel = MovieBookingModelImpl();
@@ -22,7 +22,7 @@ class ChooseCardBloc extends ChangeNotifier {
   }
 
   onCardChange(int cardIndex) {
-    this.cardIndex = cardIndex;
+    selectedCardIndex = cardIndex;
   }
 
   Future<VoucherVO?> checkout(
@@ -52,7 +52,7 @@ class ChooseCardBloc extends ChangeNotifier {
   }
 
   int getSelectedCardId() {
-    return cards?[cardIndex].id ?? -1;
+    return cards?[selectedCardIndex].id ?? -1;
   }
 
 }

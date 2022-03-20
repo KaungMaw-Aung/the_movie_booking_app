@@ -4,6 +4,7 @@ import 'package:the_movie_booking_app/data/models/movie_booking_model.dart';
 import 'package:the_movie_booking_app/data/models/movie_booking_model_impl.dart';
 import 'package:the_movie_booking_app/data/vos/cinema_vo.dart';
 import 'package:the_movie_booking_app/data/vos/date_vo.dart';
+import 'package:collection/collection.dart';
 
 class ChooseTimeBloc extends ChangeNotifier {
 
@@ -45,9 +46,18 @@ class ChooseTimeBloc extends ChangeNotifier {
   }
 
   void onTapDate(int indexOfDateList) {
-    selectedDateIndex = indexOfDateList;
     selectedDate = dates?[indexOfDateList].date;
     selectedTimeslotId = null;
+
+    dates = dates?.mapIndexed((index, date) {
+      if (date is DateVO) {
+        date.isSelected = index == indexOfDateList;
+      }
+      return date;
+    }).toList();
+
+    _clearTimeslotSelection();
+
     notifyListeners();
     _getCinemasFromDatabase(movieId, dates?[indexOfDateList].date);
   }
@@ -55,15 +65,30 @@ class ChooseTimeBloc extends ChangeNotifier {
   void onTapTimeslot(int timeslotId, String movieTime) {
     selectedTimeslotId = timeslotId;
     this.movieTime = movieTime;
-    cinemas?.forEach((cinema) {
+
+    cinemas = cinemas?.map((cinema) {
       cinema.timeslots?.forEach((element) {
+        element.isSelected = element.cinemaTimeslotId == timeslotId;
         if (element.cinemaTimeslotId == timeslotId) {
           this.cinema = cinema.cinema;
           cinemaId = cinema.cinemaId;
         }
       });
-    });
+      return cinema;
+    }).toList();
+
     notifyListeners();
+  }
+
+  void _clearTimeslotSelection() {
+    cinemas = cinemas?.map((cinema) {
+      cinema.timeslots?.forEach((element) {
+        element.isSelected = false;
+      });
+      return cinema;
+    }).toList();
+    cinema = null;
+    cinemaId = null;
   }
 
 }
