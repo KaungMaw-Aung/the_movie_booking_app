@@ -12,11 +12,12 @@ class AddNewCardBloc extends ChangeNotifier {
     String expDate,
     String cvc,
   ) {
-    return movieBookingModel.createCard(cardNumber, cardHolder, expDate, cvc);
-  }
-
-  Future<bool> refreshUserCards() {
-    return movieBookingModel.getUserCards();
+    return movieBookingModel.createCard(cardNumber, cardHolder, expDate, cvc)
+    .then((message) {
+      return movieBookingModel.getUserCards().then((_) {
+        return Future.value(message);
+      });
+    });
   }
 
 }

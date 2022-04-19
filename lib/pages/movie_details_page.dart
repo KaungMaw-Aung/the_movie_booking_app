@@ -15,15 +15,30 @@ import 'package:the_movie_booking_app/widgets/sub_heading_text_view.dart';
 
 import 'movie_choose_time_page.dart';
 
-class MovieDetailsPage extends StatelessWidget {
+class MovieDetailsPage extends StatefulWidget {
+
   final int movieId;
 
   MovieDetailsPage({required this.movieId});
 
   @override
+  State<StatefulWidget> createState() => _MovieDetailsPageState();
+}
+
+class _MovieDetailsPageState extends State<MovieDetailsPage> {
+
+  @override
+  void dispose() {
+    MovieDetailsBloc bloc = Provider.of(context, listen: false);
+    bloc.isBlocDisposed = true;
+
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => MovieDetailsBloc(movieId),
+      create: (context) => MovieDetailsBloc(widget.movieId),
       child: Scaffold(
         body: Stack(
           children: [
@@ -34,9 +49,9 @@ class MovieDetailsPage extends StatelessWidget {
                     selector: (context, bloc) => bloc.moviePosterUrl,
                     builder: (context, posterUrl, child) =>
                         MovieDetailsSliverAppBarView(
-                      () => _backToHomePage(context),
-                      posterPath: posterUrl,
-                    ),
+                              () => _backToHomePage(context),
+                          posterPath: posterUrl,
+                        ),
                   ),
                   SliverList(
                     delegate: SliverChildListDelegate(
@@ -56,8 +71,8 @@ class MovieDetailsPage extends StatelessWidget {
                           selector: (context, bloc) => bloc.movie,
                           builder: (context, movie, child) =>
                               MovieDetailsPlotSectionView(
-                            overview: movie?.overview,
-                          ),
+                                overview: movie?.overview,
+                              ),
                         ),
                         const SizedBox(
                           height: MARGIN_LARGE,
@@ -66,8 +81,8 @@ class MovieDetailsPage extends StatelessWidget {
                           selector: (context, bloc) => bloc.casts,
                           builder: (context, casts, child) =>
                               MovieDetailsCastSectionView(
-                            casts: casts,
-                          ),
+                                casts: casts,
+                              ),
                         ),
                         const SizedBox(
                           height: MOVIE_DETAIL_SCREEN_MARGIN_BOTTOM,
@@ -85,7 +100,7 @@ class MovieDetailsPage extends StatelessWidget {
                 child: Builder(
                   builder: (context) => PrimaryButtonView(
                     GET_YOUR_TICKET,
-                    () => _navigateToMovieChooseTimePage(context),
+                        () => _navigateToMovieChooseTimePage(context),
                     isElevated: true,
                   ),
                 ),
@@ -100,29 +115,30 @@ class MovieDetailsPage extends StatelessWidget {
   _navigateToMovieChooseTimePage(BuildContext context) {
     MovieDetailsBloc bloc = Provider.of(context, listen: false);
     Navigator.push(
-      context,
-      PageRouteBuilder(
+        context,
+        PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) {
-        return MovieChooseTimePage(
-                movieId: bloc.movie?.id ?? -1,
-                movieTitle: bloc.movie?.title ?? "",
-                moviePosterUrl: bloc.moviePosterUrl ?? "",
-              );
-      },
-      transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
-      // MaterialPageRoute(
-      //   builder: (context) => MovieChooseTimePage(
-      //     movieId: bloc.movie?.id ?? -1,
-      //     movieTitle: bloc.movie?.title ?? "",
-      //     moviePosterUrl: bloc.moviePosterUrl ?? "",
-      //   ),
-      // ),
-    ));
+            return MovieChooseTimePage(
+              movieId: bloc.movie?.id ?? -1,
+              movieTitle: bloc.movie?.title ?? "",
+              moviePosterUrl: bloc.moviePosterUrl ?? "",
+            );
+          },
+          transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+          // MaterialPageRoute(
+          //   builder: (context) => MovieChooseTimePage(
+          //     movieId: bloc.movie?.id ?? -1,
+          //     movieTitle: bloc.movie?.title ?? "",
+          //     moviePosterUrl: bloc.moviePosterUrl ?? "",
+          //   ),
+          // ),
+        ));
   }
 
   _backToHomePage(BuildContext context) {
     Navigator.pop(context);
   }
+
 }
 
 class MovieDetailsCastSectionView extends StatelessWidget {

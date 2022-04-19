@@ -96,7 +96,6 @@ class HomePage extends StatelessWidget {
                         HomeBloc bloc = Provider.of(context, listen: false);
                         bloc.logout().then((message) {
                           showToast(message ?? "logout succeed");
-                          bloc.deleteUserFromDatabase();
                           _navigateToWelcomePage(context);
                         }).catchError((error) => debugPrint(error.toString()));
                       },

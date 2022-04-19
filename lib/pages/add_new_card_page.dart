@@ -89,7 +89,7 @@ class _AddNewCardPageState extends State<AddNewCardPage> {
             Builder(
               builder: (context) => PrimaryButtonView(
                 CONFIRM_BUTTON_TEXT,
-                    () {
+                () {
                   AddNewCardBloc bloc = Provider.of(context, listen: false);
                   bloc.createCard(
                     cardNumberController.text,
@@ -98,9 +98,7 @@ class _AddNewCardPageState extends State<AddNewCardPage> {
                     cvcController.text,
                   ).then((message) {
                     showToast(message ?? "create card succeed");
-                    bloc.refreshUserCards().then((_) {
-                      Navigator.pop(context);
-                    }).catchError((error) => debugPrint(error));
+                    Navigator.pop(context);
                   }).catchError((error) => debugPrint(error));
                 },
               ),

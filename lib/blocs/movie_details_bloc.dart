@@ -11,6 +11,7 @@ class MovieDetailsBloc extends ChangeNotifier {
   MovieVO? movie;
   List<CastVO>? casts;
   String? moviePosterUrl;
+  bool isBlocDisposed = false;
 
   /// Model
   MovieBookingModel movieBookingModel = MovieBookingModelImpl();
@@ -22,16 +23,22 @@ class MovieDetailsBloc extends ChangeNotifier {
         .listen((movie) {
         moviePosterUrl = movie?.posterPath;
         this.movie = movie;
-        notifyListeners();
+        safeCallToNotifyListener(isBlocDisposed);
     }).onError((error) => debugPrint(error.toString()));
 
     movieBookingModel
         .getCastsByMovieIdFromDatabase(movieId)
         .listen((casts) {
         this.casts = casts;
-        notifyListeners();
+        safeCallToNotifyListener(isBlocDisposed);
     }).onError((error) => debugPrint(error.toString()));
 
+  }
+
+  void safeCallToNotifyListener(bool isBlocDispose) {
+    if (isBlocDispose == false) {
+      notifyListeners();
+    }
   }
 
 }

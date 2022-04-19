@@ -40,11 +40,10 @@ class HomeBloc extends ChangeNotifier {
   }
 
   Future<String?> logout() {
-    return movieBookingModel.logout();
-  }
-
-  void deleteUserFromDatabase() {
-    movieBookingModel.deleteUserFromDatabase();
+    return movieBookingModel.logout().then((message) {
+      movieBookingModel.deleteUserFromDatabase();
+      return Future.value(message);
+    });
   }
 
 }
