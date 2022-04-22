@@ -26,12 +26,15 @@ class MovieView extends StatelessWidget {
             const SizedBox(
               height: MARGIN_MEDIUM_2,
             ),
-            Text(
-              movie?.title ?? "",
-              maxLines: 1,
-              style: const TextStyle(
-                fontSize: TEXT_SMALL_2,
-                fontWeight: FontWeight.bold,
+            GestureDetector(
+              onTap: () => onTapMovieItem(movie?.id ?? -1),
+              child: Text(
+                movie?.title ?? "",
+                maxLines: 1,
+                style: const TextStyle(
+                  fontSize: TEXT_SMALL_2,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(

@@ -42,63 +42,65 @@ class MovieSeatsPage extends StatelessWidget {
             child: const Icon(Icons.chevron_left),
           ),
         ),
-        body: SingleChildScrollView(
-          child: Container(
-            alignment: Alignment.center,
-            child: Column(
-              children: [
-                MovieNameTimeAndCinemaSectionView(
-                  movieDate: date,
-                  cinema: cinema,
-                  movieTime: movieTime,
-                  movieTitle: movieTitle,
-                ),
-                const SizedBox(height: MARGIN_LARGE),
-                Selector<MovieSeatsBloc, List<MovieSeatVO>?>(
-                  selector: (context, bloc) => bloc.movieSeats,
-                  shouldRebuild: (oldValue, newValue) => oldValue != newValue,
-                  builder: (context, seats, child) => MovieSeatsSectionView(
-                    seats: seats,
-                    onTapMovieSeat: (seat) {
-                      MovieSeatsBloc bloc = Provider.of(context, listen: false);
-                      bloc.onTapMovieSeat(seat);
-                    },
+        body: ListView(
+          children: [
+            Container(
+              alignment: Alignment.center,
+              child: Column(
+                children: [
+                  MovieNameTimeAndCinemaSectionView(
+                    movieDate: date,
+                    cinema: cinema,
+                    movieTime: movieTime,
+                    movieTitle: movieTitle,
                   ),
-                ),
-                const SizedBox(height: MARGIN_MEDIUM_2),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-                  child: MovieSeatGlossarySectionView(),
-                ),
-                const SizedBox(height: MARGIN_LARGE),
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-                  child: DottedLineSectionView(),
-                ),
-                const SizedBox(height: MARGIN_LARGE),
-                Selector<MovieSeatsBloc, List<String>>(
-                  selector: (context, bloc) => bloc.selectedSeats,
-                  shouldRebuild: (oldValue, newValue) => oldValue != newValue,
-                  builder: (context, selectedSeats, child) =>
-                      NumberOfSeatAndTicketSectionView(
-                    tickets: selectedSeats,
+                  const SizedBox(height: MARGIN_LARGE),
+                  Selector<MovieSeatsBloc, List<MovieSeatVO>?>(
+                    selector: (context, bloc) => bloc.movieSeats,
+                    shouldRebuild: (oldValue, newValue) => oldValue != newValue,
+                    builder: (context, seats, child) => MovieSeatsSectionView(
+                      seats: seats,
+                      onTapMovieSeat: (seat) {
+                        MovieSeatsBloc bloc = Provider.of(context, listen: false);
+                        bloc.onTapMovieSeat(seat);
+                      },
+                    ),
                   ),
-                ),
-                const SizedBox(
-                  height: MARGIN_XLARGE,
-                ),
-                Selector<MovieSeatsBloc, double>(
-                  selector: (context, bloc) => bloc.totalPrice,
-                  builder: (context, totalPrice, child) => PrimaryButtonView(
-                    "Buy ticket for \$ $totalPrice",
-                    () => _navigateToMovieSnackPage(context),
+                  const SizedBox(height: MARGIN_MEDIUM_2),
+                  Padding(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
+                    child: MovieSeatGlossarySectionView(),
                   ),
-                ),
-              ],
+                  const SizedBox(height: MARGIN_LARGE),
+                  Padding(
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
+                    child: DottedLineSectionView(),
+                  ),
+                  const SizedBox(height: MARGIN_LARGE),
+                  Selector<MovieSeatsBloc, List<String>>(
+                    selector: (context, bloc) => bloc.selectedSeats,
+                    shouldRebuild: (oldValue, newValue) => oldValue != newValue,
+                    builder: (context, selectedSeats, child) =>
+                        NumberOfSeatAndTicketSectionView(
+                          tickets: selectedSeats,
+                        ),
+                  ),
+                  const SizedBox(
+                    height: MARGIN_XLARGE,
+                  ),
+                  Selector<MovieSeatsBloc, double>(
+                    selector: (context, bloc) => bloc.totalPrice,
+                    builder: (context, totalPrice, child) => PrimaryButtonView(
+                      "Buy ticket for \$ $totalPrice",
+                          () => _navigateToMovieSnackPage(context),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -261,6 +263,7 @@ class MovieSeatsSectionView extends StatelessWidget {
           ),
           itemBuilder: (context, index) {
             return MovieSeatItemView(
+              key: Key(("seat_$index")),
               movieSeat: seats?[index],
               onTapMovieSeat: onTapMovieSeat,
             );

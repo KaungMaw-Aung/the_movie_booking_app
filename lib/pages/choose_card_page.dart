@@ -44,6 +44,7 @@ class ChooseCardPage extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => ChooseCardBloc(),
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           leading: GestureDetector(
             onTap: () => Navigator.pop(context),
@@ -89,7 +90,7 @@ class ChooseCardPage extends StatelessWidget {
                           ),
                           items: cards
                                   ?.map((each) => CardView(card: each))
-                                  .toList() ??
+                                  .toList().reversed.toList() ??
                               [],
                         )
                       : const Center(

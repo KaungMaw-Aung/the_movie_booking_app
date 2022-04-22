@@ -58,13 +58,16 @@ class PrimaryButtonView extends StatelessWidget {
               ),
               Align(
                 alignment: Alignment.center,
-                child: Text(
-                  buttonText,
-                  style: TextStyle(
-                    color: isOnPrimaryBackground
-                        ? Colors.white
-                        : SECONDARY_WELCOME_TEXT_COLOR,
-                    fontSize: TEXT_REGULAR_2X,
+                child: GestureDetector(
+                  onTap: () => onTapButton(),
+                  child: Text(
+                    buttonText,
+                    style: TextStyle(
+                      color: isOnPrimaryBackground
+                          ? Colors.white
+                          : SECONDARY_WELCOME_TEXT_COLOR,
+                      fontSize: TEXT_REGULAR_2X,
+                    ),
                   ),
                 ),
               ),

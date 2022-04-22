@@ -16,7 +16,6 @@ import 'package:the_movie_booking_app/widgets/sub_heading_text_view.dart';
 import 'movie_choose_time_page.dart';
 
 class MovieDetailsPage extends StatefulWidget {
-
   final int movieId;
 
   MovieDetailsPage({required this.movieId});
@@ -26,14 +25,13 @@ class MovieDetailsPage extends StatefulWidget {
 }
 
 class _MovieDetailsPageState extends State<MovieDetailsPage> {
-
-  @override
+  /*@override
   void dispose() {
     MovieDetailsBloc bloc = Provider.of(context, listen: false);
     bloc.isBlocDisposed = true;
 
     super.dispose();
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -49,9 +47,9 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                     selector: (context, bloc) => bloc.moviePosterUrl,
                     builder: (context, posterUrl, child) =>
                         MovieDetailsSliverAppBarView(
-                              () => _backToHomePage(context),
-                          posterPath: posterUrl,
-                        ),
+                      () => _backToHomePage(context),
+                      posterPath: posterUrl,
+                    ),
                   ),
                   SliverList(
                     delegate: SliverChildListDelegate(
@@ -71,8 +69,8 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                           selector: (context, bloc) => bloc.movie,
                           builder: (context, movie, child) =>
                               MovieDetailsPlotSectionView(
-                                overview: movie?.overview,
-                              ),
+                            overview: movie?.overview,
+                          ),
                         ),
                         const SizedBox(
                           height: MARGIN_LARGE,
@@ -81,8 +79,8 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                           selector: (context, bloc) => bloc.casts,
                           builder: (context, casts, child) =>
                               MovieDetailsCastSectionView(
-                                casts: casts,
-                              ),
+                            casts: casts,
+                          ),
                         ),
                         const SizedBox(
                           height: MOVIE_DETAIL_SCREEN_MARGIN_BOTTOM,
@@ -100,7 +98,7 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
                 child: Builder(
                   builder: (context) => PrimaryButtonView(
                     GET_YOUR_TICKET,
-                        () => _navigateToMovieChooseTimePage(context),
+                    () => _navigateToMovieChooseTimePage(context),
                     isElevated: true,
                   ),
                 ),
@@ -124,7 +122,8 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
               moviePosterUrl: bloc.moviePosterUrl ?? "",
             );
           },
-          transitionsBuilder: (context, animation, secondaryAnimation, child) => child,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              child,
           // MaterialPageRoute(
           //   builder: (context) => MovieChooseTimePage(
           //     movieId: bloc.movie?.id ?? -1,
@@ -138,7 +137,6 @@ class _MovieDetailsPageState extends State<MovieDetailsPage> {
   _backToHomePage(BuildContext context) {
     Navigator.pop(context);
   }
-
 }
 
 class MovieDetailsCastSectionView extends StatelessWidget {
@@ -409,9 +407,13 @@ class MovieDetailsImageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.network(
-      "$IMAGE_BASE_URL${url ?? ""}",
-      fit: BoxFit.cover,
-    );
+    return (url != null)
+        ? Image.network(
+            "$IMAGE_BASE_URL${url ?? ""}",
+            fit: BoxFit.cover,
+          )
+        : const Center(
+            child: CircularProgressIndicator(),
+          );
   }
 }

@@ -27,6 +27,7 @@ class _AddNewCardPageState extends State<AddNewCardPage> {
     return ChangeNotifierProvider(
       create: (context) => AddNewCardBloc(),
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           leading: GestureDetector(
             onTap: () => Navigator.pop(context, true),

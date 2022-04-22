@@ -224,45 +224,64 @@ class MovieChooseDateView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-        height: MOVIE_TIME_DATE_LIST_HEIGHT,
-        color: PRIMARY_COLOR,
-        child: ListView.separated(
-          padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-          scrollDirection: Axis.horizontal,
-          separatorBuilder: (context, index) {
-            return const SizedBox(width: MARGIN_MEDIUM_2);
-          },
-          itemCount: dates?.length ?? 0,
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: () => onTapDate(index),
-              child: Column(
-                children: [
-                  Text(
-                    dates?[index].day ?? "",
-                    style: TextStyle(
-                      color: dates?[index].isSelected == true
-                          ? Colors.white
-                          : Colors.grey,
-                      fontSize: TEXT_REGULAR_3X,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: MARGIN_MEDIUM,
-                  ),
-                  Text(
-                    dates?[index].daysOfMonth ?? "",
-                    style: TextStyle(
-                      color: dates?[index].isSelected == true
-                          ? Colors.white
-                          : Colors.grey,
-                      fontSize: TEXT_REGULAR_3X,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ));
+      height: MOVIE_TIME_DATE_LIST_HEIGHT,
+      color: PRIMARY_COLOR,
+      child: ListView.separated(
+        padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
+        scrollDirection: Axis.horizontal,
+        separatorBuilder: (context, index) {
+          return const SizedBox(width: MARGIN_MEDIUM_2);
+        },
+        itemCount: dates?.length ?? 0,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () => onTapDate(index),
+            child: DateView(
+              key: Key("date$index"),
+              dates: dates,
+              index: index,
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class DateView extends StatelessWidget {
+  const DateView({
+    Key? key,
+    required this.dates,
+    required this.index,
+  }) : super(key: key);
+
+  final List<DateVO>? dates;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          dates?[index].day ?? "",
+          style: TextStyle(
+            color:
+                dates?[index].isSelected == true ? Colors.white : Colors.grey,
+            fontSize: TEXT_REGULAR_3X,
+          ),
+        ),
+        const SizedBox(
+          height: MARGIN_MEDIUM,
+        ),
+        Text(
+          dates?[index].daysOfMonth ?? "",
+          style: TextStyle(
+            color:
+                dates?[index].isSelected == true ? Colors.white : Colors.grey,
+            fontSize: TEXT_REGULAR_3X,
+          ),
+        ),
+      ],
+    );
   }
 }

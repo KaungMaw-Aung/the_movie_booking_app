@@ -9,15 +9,18 @@ class MovieSeatItemView extends StatelessWidget {
   final MovieSeatVO? movieSeat;
   final Function(MovieSeatVO?) onTapMovieSeat;
 
-  MovieSeatItemView({
+  const MovieSeatItemView({
+    Key? key,
     required this.movieSeat,
     required this.onTapMovieSeat,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => onTapMovieSeat(movieSeat),
+      onTap: () {
+        onTapMovieSeat(movieSeat);
+      },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 3),
         decoration: BoxDecoration(

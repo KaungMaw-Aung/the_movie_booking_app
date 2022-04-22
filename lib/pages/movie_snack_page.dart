@@ -9,6 +9,7 @@ import 'package:the_movie_booking_app/resources/colors.dart';
 import 'package:the_movie_booking_app/resources/dimens.dart';
 import 'package:the_movie_booking_app/resources/strings.dart';
 import 'package:the_movie_booking_app/widgets/primary_button_view.dart';
+import 'package:collection/collection.dart';
 
 class MovieSnackPage extends StatelessWidget {
   final double ticketsPrice;
@@ -330,14 +331,12 @@ class ComboSetSectionView extends StatelessWidget {
       scrollDirection: Axis.vertical,
       physics: const NeverScrollableScrollPhysics(),
       shrinkWrap: true,
-      children: snacks
-              ?.map((snack) => ComboSetViewItem(
-                    snack: snack,
-                    onIncrease: onIncrease,
-                    onDecrease: onDecrease,
-                  ))
-              .toList() ??
-          [],
+      children: snacks?.mapIndexed((index, snack) => ComboSetViewItem(
+        key: Key("snack_$index"),
+        snack: snack,
+        onIncrease: onIncrease,
+        onDecrease: onDecrease,
+      )).toList() ?? []
     );
   }
 }
@@ -348,10 +347,11 @@ class ComboSetViewItem extends StatelessWidget {
   final Function(SnackVO?) onDecrease;
 
   ComboSetViewItem({
+    Key? key,
     required this.snack,
     required this.onIncrease,
     required this.onDecrease,
-  });
+  }): super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -381,6 +381,7 @@ class ComboSetViewItem extends StatelessWidget {
                 height: MARGIN_MEDIUM,
               ),
               ComboSetQtyButtonGroupView(
+                key: key,
                 onDecrease: () => onDecrease(snack),
                 onIncrease: () => onIncrease(snack),
                 quantity: snack?.quantity ?? 0,
@@ -399,10 +400,11 @@ class ComboSetQtyButtonGroupView extends StatelessWidget {
   final int quantity;
 
   ComboSetQtyButtonGroupView({
+    Key? key,
     required this.onIncrease,
     required this.onDecrease,
     required this.quantity,
-  });
+  }): super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -413,6 +415,7 @@ class ComboSetQtyButtonGroupView extends StatelessWidget {
           GestureDetector(
             onTap: () => onDecrease(),
             child: Container(
+              key: key,
               width: COMBO_SET_BUTTON_GROUP_SIZE,
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.only(
@@ -443,6 +446,7 @@ class ComboSetQtyButtonGroupView extends StatelessWidget {
           GestureDetector(
             onTap: () => onIncrease(),
             child: Container(
+              key: key,
               width: COMBO_SET_BUTTON_GROUP_SIZE,
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.only(
