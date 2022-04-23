@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:hive/hive.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:the_movie_booking_app/data/vos/timeslot_vo.dart';
@@ -42,8 +43,8 @@ class CinemaVO {
           runtimeType == other.runtimeType &&
           cinemaId == other.cinemaId &&
           cinema == other.cinema &&
-          timeslots == other.timeslots &&
-          dates == other.dates;
+          const ListEquality().equals(timeslots, other.timeslots) &&
+          const ListEquality().equals(dates, other.dates);
 
   @override
   int get hashCode =>

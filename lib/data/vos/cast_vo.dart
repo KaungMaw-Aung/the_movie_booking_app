@@ -41,4 +41,16 @@ class CastVO {
   String toString() {
     return 'CastVO{id: $id, name: $name, profilePath: $profilePath, movieIds: ${movieIds?.length ?? 0}';
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is CastVO &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          name == other.name &&
+          profilePath == other.profilePath;
+
+  @override
+  int get hashCode => id.hashCode ^ name.hashCode ^ profilePath.hashCode;
 }

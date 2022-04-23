@@ -28,6 +28,12 @@ class PaymentVO {
 
   Map<String, dynamic> toJson() => _$PaymentVOToJson(this);
 
+
+  @override
+  String toString() {
+    return 'PaymentVO{id: $id, name: $name, description: $description, isSelected: $isSelected}';
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||

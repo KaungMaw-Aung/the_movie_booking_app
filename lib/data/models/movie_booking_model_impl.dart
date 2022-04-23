@@ -15,6 +15,12 @@ import 'package:the_movie_booking_app/network/data_agents/movie_booking_retrofit
 import 'package:the_movie_booking_app/network/responses/checkout_request.dart';
 import 'package:the_movie_booking_app/persistence/daos/cast_dao.dart';
 import 'package:the_movie_booking_app/persistence/daos/cinema_dao.dart';
+import 'package:the_movie_booking_app/persistence/daos/impls/cast_dao_impl.dart';
+import 'package:the_movie_booking_app/persistence/daos/impls/cinema_dao_impl.dart';
+import 'package:the_movie_booking_app/persistence/daos/impls/movie_dao_impl.dart';
+import 'package:the_movie_booking_app/persistence/daos/impls/payment_dao_impl.dart';
+import 'package:the_movie_booking_app/persistence/daos/impls/snack_dao_impl.dart';
+import 'package:the_movie_booking_app/persistence/daos/impls/user_dao_impl.dart';
 import 'package:the_movie_booking_app/persistence/daos/movie_dao.dart';
 import 'package:the_movie_booking_app/persistence/daos/payment_dao.dart';
 import 'package:the_movie_booking_app/persistence/daos/snack_dao.dart';
@@ -33,12 +39,31 @@ class MovieBookingModelImpl extends MovieBookingModel {
   MovieBookingDataAgent dataAgent = MovieBookingRetrofitDataAgentImpl();
 
   /// dao
-  UserDao userDao = UserDao();
-  MovieDao movieDao = MovieDao();
-  CastDao castDao = CastDao();
-  SnackDao snackDao = SnackDao();
-  CinemaDao cinemaDao = CinemaDao();
-  PaymentDao paymentDao = PaymentDao();
+  UserDao userDao = UserDaoImpl();
+  MovieDao movieDao = MovieDaoImpl();
+  CastDao castDao = CastDaoImpl();
+  SnackDao snackDao = SnackDaoImpl();
+  CinemaDao cinemaDao = CinemaDaoImpl();
+  PaymentDao paymentDao = PaymentDaoImpl();
+
+  /// for testing purpose
+  void setDaosAndDataAgents(
+    MovieBookingDataAgent _dataAgent,
+    UserDao _userDao,
+    MovieDao _movieDao,
+    CastDao _castDao,
+    SnackDao _snackDao,
+    CinemaDao _cinemaDao,
+    PaymentDao _paymentDao,
+  ) {
+    dataAgent = _dataAgent;
+    userDao = _userDao;
+    movieDao = _movieDao;
+    castDao = _castDao;
+    snackDao = _snackDao;
+    cinemaDao = _cinemaDao;
+    paymentDao = _paymentDao;
+  }
 
   /// network
   @override
@@ -140,11 +165,13 @@ class MovieBookingModelImpl extends MovieBookingModel {
   @override
   void getCinemaDayTimeslot(int movieId, String date) {
     getUserFromDatabase().first.then((user) {
-      dataAgent.getCinemaDayTimeslot(
+      dataAgent
+          .getCinemaDayTimeslot(
         user?.getBearerToken() ?? "",
         movieId,
         date,
-      ).then((cinemas) {
+      )
+          .then((cinemas) {
         if (cinemas != null) {
           cinemaDao.saveCinemas(cinemas, date);
         }
@@ -179,7 +206,9 @@ class MovieBookingModelImpl extends MovieBookingModel {
   @override
   void getPaymentMethods() {
     getUserFromDatabase().first.then((user) {
-      dataAgent.getPaymentMethods(user?.getBearerToken() ?? "").then((payments) {
+      dataAgent
+          .getPaymentMethods(user?.getBearerToken() ?? "")
+          .then((payments) {
         if (payments != null) {
           paymentDao.savePayments(payments);
         }
@@ -236,7 +265,8 @@ class MovieBookingModelImpl extends MovieBookingModel {
   @override
   Stream<List<MovieVO>?> getNowPlayingFromDatabase() {
     getNowPlayingMovies(1);
-    return movieDao.getAllEventsFromMovieBox()
+    return movieDao
+        .getAllEventsFromMovieBox()
         .startWith(movieDao.getNowPlayingMoviesStream())
         .map((event) => movieDao.getNowPlayingMovies());
   }
@@ -244,7 +274,8 @@ class MovieBookingModelImpl extends MovieBookingModel {
   @override
   Stream<List<MovieVO>?> getComingSoonFromDatabase() {
     getComingSoonMovies(1);
-    return movieDao.getAllEventsFromMovieBox()
+    return movieDao
+        .getAllEventsFromMovieBox()
         .startWith(movieDao.getComingSoonMoviesStream())
         .map((event) => movieDao.getComingSoonMovies());
   }
@@ -252,7 +283,8 @@ class MovieBookingModelImpl extends MovieBookingModel {
   @override
   Stream<MovieVO?> getMovieDetailByIdFromDatabase(int movieId) {
     getMovieDetail(movieId);
-    return movieDao.getAllEventsFromMovieBox()
+    return movieDao
+        .getAllEventsFromMovieBox()
         .startWith(movieDao.getMovieDetailsStreamById(movieId))
         .map((event) => movieDao.getMovieById(movieId));
   }
@@ -260,24 +292,27 @@ class MovieBookingModelImpl extends MovieBookingModel {
   @override
   Stream<List<CastVO>> getCastsByMovieIdFromDatabase(int movieId) {
     getMovieCredit(movieId);
-    return castDao.getAllEventsFromCastBox()
+    return castDao
+        .getAllEventsFromCastBox()
         .startWith(castDao.getCastsStreamByMovieId(movieId))
         .map((event) => castDao.getCastsByMovieId(movieId));
   }
 
   @override
   Stream<List<SnackVO>> getSnacksFromDatabase() {
-    return snackDao.getAllEventsFromSnackBox()
-    .startWith(snackDao.getSnacksStream())
-    .map((event) => snackDao.getAllSnacks());
+    return snackDao
+        .getAllEventsFromSnackBox()
+        .startWith(snackDao.getSnacksStream())
+        .map((event) => snackDao.getAllSnacks());
   }
 
   @override
   Stream<List<CinemaVO>?> getCinemasFromDatabase(int movieId, String date) {
     getCinemaDayTimeslot(movieId, date);
-    return cinemaDao.getAllEventsFromCinemaBox()
-    .startWith(cinemaDao.getCinemasStreamByDate(date))
-    .map((event) => cinemaDao.getCinemaByDate(date));
+    return cinemaDao
+        .getAllEventsFromCinemaBox()
+        .startWith(cinemaDao.getCinemasStreamByDate(date))
+        .map((event) => cinemaDao.getCinemaByDate(date));
   }
 
   @override
@@ -300,7 +335,8 @@ class MovieBookingModelImpl extends MovieBookingModel {
   @override
   Stream<List<PaymentVO>> getPaymentMethodsFromDatabase() {
     getPaymentMethods();
-    return paymentDao.getAllEventsFromPaymentBox()
+    return paymentDao
+        .getAllEventsFromPaymentBox()
         .startWith(paymentDao.getPaymentsStream())
         .map((event) => paymentDao.getAllPayments());
   }
@@ -308,9 +344,9 @@ class MovieBookingModelImpl extends MovieBookingModel {
   @override
   Stream<List<CardVO>?> getUserCardsFromDatabase() {
     getUserCards();
-    return userDao.getAllEventsFromUserBox()
+    return userDao
+        .getAllEventsFromUserBox()
         .startWith(userDao.getUserCardsStream())
         .map((event) => userDao.getUserCards());
   }
-
 }

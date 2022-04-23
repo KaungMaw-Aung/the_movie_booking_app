@@ -32,6 +32,12 @@ class SnackVO {
 
   Map<String, dynamic> toJson() => _$SnackVOToJson(this);
 
+
+  @override
+  String toString() {
+    return 'SnackVO{id: $id, name: $name, description: $description, price: $price}';
+  }
+
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
