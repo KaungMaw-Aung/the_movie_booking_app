@@ -13,8 +13,8 @@ import 'package:the_movie_booking_app/data/vos/voucher_vo.dart';
 
 List<CardVO> getMockCards() {
   return [
-    CardVO(0, "Maw", "000 000 000", "12/8", "Credit Card", false),
-    CardVO(1, "Kaung", "111 111 111", "8/12", "Credit Card", false),
+    CardVO(0, "Maw", "000 000 000", "12/8", "Credit Card"),
+    CardVO(1, "Kaung", "111 111 111", "8/12", "Credit Card"),
   ];
 }
 

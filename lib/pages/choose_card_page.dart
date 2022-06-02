@@ -1,6 +1,8 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:the_movie_booking_app/blocs/choose_card_bloc.dart';
+import 'package:the_movie_booking_app/config/environment_config.dart';
 import 'package:the_movie_booking_app/data/vos/card_vo.dart';
 import 'package:the_movie_booking_app/data/vos/snack_req_vo.dart';
 import 'package:the_movie_booking_app/data/vos/voucher_vo.dart';
@@ -10,6 +12,8 @@ import 'package:the_movie_booking_app/resources/colors.dart';
 import 'package:the_movie_booking_app/resources/dimens.dart';
 import 'package:the_movie_booking_app/resources/strings.dart';
 import 'package:the_movie_booking_app/widgets/primary_button_view.dart';
+
+import '../config/config_values.dart';
 
 class ChooseCardPage extends StatelessWidget {
   final String totalAmount;
@@ -65,58 +69,54 @@ class ChooseCardPage extends StatelessWidget {
             const SizedBox(
               height: MARGIN_XLARGE,
             ),
-            /*Selector<ChooseCardBloc, List<CardVO>?>(
-              selector: (context, bloc) => bloc.cards,
-              builder: (context, cards, child) {
-                return Container(
-                  height: CARD_CAROUSEL_HEIGHT,
-                  child: (cards?.isNotEmpty == true)
-                      ? CarouselSlider(
-                          options: CarouselOptions(
-                            height: CARD_CAROUSEL_HEIGHT,
-                            aspectRatio: 16 / 9,
-                            viewportFraction: 0.8,
-                            initialPage: 0,
-                            enableInfiniteScroll: false,
-                            reverse: false,
-                            enlargeCenterPage: true,
-                            scrollDirection: Axis.horizontal,
-                            onPageChanged: (index, _) {
-                              ChooseCardBloc bloc =
-                                  Provider.of(context, listen: false);
-                              bloc.onCardChange(index);
-                            },
-                          ),
-                          items: cards
-                                  ?.map((each) => CardView(card: each))
-                                  .toList().reversed.toList() ??
-                              [],
-                        )
-                      : const Center(
-                          child: Text("You currently have no cards added.")),
-                );
-              },
-            ),*/
             Selector<ChooseCardBloc, List<CardVO>?>(
               selector: (context, bloc) => bloc.cards,
+              shouldRebuild: (oldValue, newValue) => oldValue != newValue,
               builder: (context, cards, child) {
                 return SizedBox(
                   height: CARD_CAROUSEL_HEIGHT,
                   child: (cards?.isNotEmpty == true)
-                      ? ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.only(left: MARGIN_MEDIUM_2),
-                          itemCount: cards?.length ?? 0,
-                          itemBuilder: (BuildContext context, int index) {
-                            return CardWithBorderView(
-                              card: cards?[index],
-                              onTapCard: (cardId) {
-                                ChooseCardBloc bloc = Provider.of(context, listen: false);
-                                bloc.onTapCard(cardId);
+                      ? (CARDS_LAYOUTS[EnvironmentConfig.CONFIG_CARDS_LAYOUT] ==
+                              "carousel")
+                          ? CarouselSlider(
+                              options: CarouselOptions(
+                                height: CARD_CAROUSEL_HEIGHT,
+                                aspectRatio: 16 / 9,
+                                viewportFraction: 0.8,
+                                initialPage: 0,
+                                enableInfiniteScroll: false,
+                                reverse: false,
+                                enlargeCenterPage: true,
+                                scrollDirection: Axis.horizontal,
+                                onPageChanged: (index, _) {
+                                  ChooseCardBloc bloc =
+                                      Provider.of(context, listen: false);
+                                  bloc.onCardChange(index);
+                                },
+                              ),
+                              items: cards
+                                      ?.map((each) => CardView(card: each))
+                                      .toList()
+                                      .reversed
+                                      .toList() ??
+                                  [],
+                            )
+                          : ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding:
+                                  const EdgeInsets.only(left: MARGIN_MEDIUM_2),
+                              itemCount: cards?.length ?? 0,
+                              itemBuilder: (BuildContext context, int index) {
+                                return CardWithBorderView(
+                                  card: cards?[index],
+                                  onTapCard: (cardId) {
+                                    ChooseCardBloc bloc =
+                                        Provider.of(context, listen: false);
+                                    bloc.onTapCard(cardId, index);
+                                  },
+                                );
                               },
-                            );
-                          },
-                        )
+                            )
                       : const Center(
                           child: Text(
                             "You currently have no cards added.",
@@ -139,23 +139,21 @@ class ChooseCardPage extends StatelessWidget {
             Builder(
               builder: (context) => PrimaryButtonView(PURCHASE, () {
                 ChooseCardBloc bloc = Provider.of(context, listen: false);
-                bloc
-                    .checkout(
-                  cinemaDayTimeslotId,
-                  row,
-                  seatNumbers,
-                  bookingDate,
-                  double.parse(totalAmount),
-                  movieId,
-                  bloc.getSelectedCardId(),
-                  cinemaId,
-                  snacks,
-                )
-                    .then((voucher) {
-                  _navigateToTicketPage(context, voucher);
-                }).catchError((error) {
-                  debugPrint(error.toString());
-                });
+                  bloc.checkout(
+                    cinemaDayTimeslotId,
+                    row,
+                    seatNumbers,
+                    bookingDate,
+                    double.parse(totalAmount),
+                    movieId,
+                    bloc.getSelectedCardId(),
+                    cinemaId,
+                    snacks,
+                  ).then((voucher) {
+                    _navigateToTicketPage(context, voucher);
+                  }).catchError((error) {
+                    debugPrint(error.toString());
+                  });
               }),
             ),
             const SizedBox(

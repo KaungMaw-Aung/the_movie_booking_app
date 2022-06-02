@@ -29,3 +29,9 @@ const Map<String, String> APP_TITLES = {
   "APP_TITLE_GALAXY_APP": "Galaxy App",
   "APP_TITLE_MOVIE_APP" : "Movie App",
 };
+
+/// Cards Layouts
+const Map<String, String> CARDS_LAYOUTS = {
+  "CARD_LAYOUT_GALAXY_APP": "carousel",
+  "CARD_LAYOUT_MOVIE_APP" : "horizontal_list",
+};

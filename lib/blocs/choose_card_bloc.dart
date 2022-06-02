@@ -20,7 +20,8 @@ class ChooseCardBloc extends ChangeNotifier {
     }
 
     movieBookingModel.getUserCardsFromDatabase().listen((cards) {
-      this.cards = cards;
+      this.cards = cards?.reversed.toList();
+      cards?.last.isSelected = true;
       notifyListeners();
     }).onError((error) => debugPrint(error.toString()));
   }
@@ -29,11 +30,12 @@ class ChooseCardBloc extends ChangeNotifier {
     selectedCardIndex = cardIndex;
   }
 
-  onTapCard(int cardId) {
+  onTapCard(int cardId, int index) {
     cards = cards?.map((card) {
       card.isSelected = (card.id == cardId);
       return card;
     }).toList() ?? [];
+    selectedCardIndex = index;
     notifyListeners();
   }
 
