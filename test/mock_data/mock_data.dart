@@ -1,6 +1,7 @@
 import 'package:the_movie_booking_app/data/vos/card_vo.dart';
 import 'package:the_movie_booking_app/data/vos/cast_vo.dart';
 import 'package:the_movie_booking_app/data/vos/cinema_vo.dart';
+import 'package:the_movie_booking_app/data/vos/date_vo.dart';
 import 'package:the_movie_booking_app/data/vos/genre_vo.dart';
 import 'package:the_movie_booking_app/data/vos/movie_seat_vo.dart';
 import 'package:the_movie_booking_app/data/vos/movie_vo.dart';
@@ -12,8 +13,8 @@ import 'package:the_movie_booking_app/data/vos/voucher_vo.dart';
 
 List<CardVO> getMockCards() {
   return [
-    CardVO(0, "Maw", "000 000 000", "12/8", "Credit Card"),
-    CardVO(1, "Kaung", "111 111 111", "8/12", "Credit Card"),
+    CardVO(0, "Maw", "000 000 000", "12/8", "Credit Card", false),
+    CardVO(1, "Kaung", "111 111 111", "8/12", "Credit Card", false),
   ];
 }
 
@@ -140,7 +141,7 @@ List<List<MovieSeatVO>> getMockMovieSeats() {
 
 List<SnackVO> getMockSnacks() {
   return [
-    SnackVO(1, "Popcorn", "Et dolores eaque officia aut.", 2.0),
+    SnackVO(1, "Popcorn", "Et dolores eaque officia aut.", 2.0, quantity: 1),
     SnackVO(2, "Smoothies",
         "Voluptatum consequatur aut molestiae soluta nulla.", 3.0),
     SnackVO(3, "Carrots", "At vero et doloribus sint porro ipsum consequatur.",
@@ -174,4 +175,11 @@ VoucherVO getMockVoucher() {
     getMockSnacks(),
     "voucher_qr_code",
   );
+}
+
+List<DateVO> getMockDates() {
+  return [
+    DateVO("", "", "2022-04-22", false),
+    DateVO("", "", "2022-04-23", false),
+  ];
 }

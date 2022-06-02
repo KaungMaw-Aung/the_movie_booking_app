@@ -13,7 +13,12 @@ class SnackBloc extends ChangeNotifier {
   /// Model
   MovieBookingModel movieBookingModel = MovieBookingModelImpl();
 
-  SnackBloc(double ticketsPrice) {
+  SnackBloc(double ticketsPrice, [MovieBookingModel? _movieBookingModel]) {
+
+    if (_movieBookingModel != null) {
+      movieBookingModel = _movieBookingModel;
+    }
+
     /// get snacks
     movieBookingModel.getSnacksFromDatabase().listen((snackList) {
       snacks = snackList;

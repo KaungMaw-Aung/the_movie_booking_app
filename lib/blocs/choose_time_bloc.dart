@@ -23,7 +23,11 @@ class ChooseTimeBloc extends ChangeNotifier {
   /// Model
   MovieBookingModel movieBookingModel = MovieBookingModelImpl();
 
-  ChooseTimeBloc(this.movieId) {
+  ChooseTimeBloc(this.movieId, [MovieBookingModel? _movieBookingModel]) {
+
+    if (_movieBookingModel != null) {
+      movieBookingModel = _movieBookingModel;
+    }
 
     /// dates
     movieBookingModel.getDates().then((dates) {

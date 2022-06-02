@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 const PRIMARY_COLOR = Color.fromRGBO(128, 0, 238, 1.0);
+const THE_MOVIE_PRIMARY_COLOR = Color.fromRGBO(22, 28, 36, 1.0);
 const GHOST_BUTTON_BORDER_COLOR_ON_PRIMARY = Color.fromRGBO(255, 255, 255, 0.8);
 const PRIMARY_WELCOME_TEXT_COLOR = Color.fromRGBO(31 , 29, 54, 1.0);
 const SECONDARY_WELCOME_TEXT_COLOR = Color.fromRGBO(148, 155, 188, 1.0);
@@ -16,3 +17,4 @@ const PAYMENT_METHODS_ICON_COLOR = Color.fromRGBO(140, 146, 183, 1.0);
 const CARD_GRADIENT_START_COLOR = Color.fromRGBO(162, 55, 255, 1.0);
 const CARD_GRADIENT_END_COLOR = Color.fromRGBO(184, 56, 255, 1.0);
 const ADD_NEW_CARD_BUTTON_COLOR = Color.fromRGBO(0, 206, 138, 1.0);
+const CARD_BORDER_COLOR = Color.fromRGBO(233, 189, 68, 1.0);

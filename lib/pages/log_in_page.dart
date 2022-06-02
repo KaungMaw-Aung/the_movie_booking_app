@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:the_movie_booking_app/blocs/login_bloc.dart';
+import 'package:the_movie_booking_app/config/environment_config.dart';
 import 'package:the_movie_booking_app/pages/home_page.dart';
 import 'package:the_movie_booking_app/resources/colors.dart';
 import 'package:the_movie_booking_app/resources/dimens.dart';
@@ -10,6 +11,8 @@ import 'package:the_movie_booking_app/widgets/input_field_section_view.dart';
 import 'package:the_movie_booking_app/widgets/label_text_view.dart';
 import 'package:the_movie_booking_app/widgets/primary_button_view.dart';
 import 'package:the_movie_booking_app/widgets/welcome_text_section_view.dart';
+
+import '../config/config_values.dart';
 
 class LogInPage extends StatelessWidget {
   final List<String> tabLabels = ["Login", "Sign in"];
@@ -146,8 +149,8 @@ class _AuthSectionViewState extends State<AuthSectionView> {
             length: widget.tabLabels.length,
             child: TabBar(
               isScrollable: false,
-              indicatorColor: PRIMARY_COLOR,
-              labelColor: PRIMARY_COLOR,
+              indicatorColor: THEME_COLORS[EnvironmentConfig.CONFIG_THEME_COLOR],
+              labelColor: THEME_COLORS[EnvironmentConfig.CONFIG_THEME_COLOR],
               labelPadding: const EdgeInsets.symmetric(vertical: MARGIN_MEDIUM),
               indicatorWeight: 4.0,
               unselectedLabelColor: PRIMARY_WELCOME_TEXT_COLOR,

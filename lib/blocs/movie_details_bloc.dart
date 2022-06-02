@@ -16,7 +16,11 @@ class MovieDetailsBloc extends ChangeNotifier {
   /// Model
   MovieBookingModel movieBookingModel = MovieBookingModelImpl();
 
-  MovieDetailsBloc(int movieId) {
+  MovieDetailsBloc(int movieId, [MovieBookingModel? _movieBookingModel]) {
+
+    if (_movieBookingModel != null) {
+      movieBookingModel = _movieBookingModel;
+    }
 
     movieBookingModel
         .getMovieDetailByIdFromDatabase(movieId)

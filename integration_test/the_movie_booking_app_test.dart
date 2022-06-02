@@ -23,6 +23,7 @@ import 'package:the_movie_booking_app/pages/welcome_page.dart';
 import 'package:the_movie_booking_app/persistence/persistence_constants.dart';
 import 'package:the_movie_booking_app/viewitems/movie_seat_item_view.dart';
 import 'package:the_movie_booking_app/widgets/input_field_section_view.dart';
+import 'package:the_movie_booking_app/widgets/primary_button_view.dart';
 
 import 'test_data/test_data.dart';
 
@@ -114,7 +115,7 @@ void main() async {
 
     // tap on Date item
     await tester.tap(find.byKey(const Key(DATE_KEY_ONE_TIMESLOT_PAGE)));
-    await tester.pumpAndSettle(const Duration(seconds: 5));
+    await tester.pumpAndSettle(const Duration(seconds: 10));
 
     // check if cinemas appeared
     expect(find.text(CINEMA_ONE_TIMESLOT_PAGE), findsOneWidget);
@@ -141,22 +142,22 @@ void main() async {
     expect(find.text(TOTAL_PRICE_ZERO), findsOneWidget);
     expect(find.text(TOTAL_PRICE_THREE), findsNothing);
 
-    // tap seat C-1
-    await tester.tap(find.byKey(const Key(MOVIE_SEAT_C1_KEY)));
+    // tap seat C-2
+    await tester.tap(find.byKey(const Key(MOVIE_SEAT_C2_KEY)));
     await tester.pumpAndSettle(const Duration(seconds: 3));
     expect(find.text(TOTAL_PRICE_THREE), findsOneWidget);
     expect(find.text('1'), findsOneWidget);
-    expect(find.text(SELECTED_MOVIE_SEAT_C1), findsWidgets);
+    expect(find.text(SELECTED_MOVIE_SEAT_C2), findsWidgets);
 
     // tap seat C-3
     await tester.tap(find.byKey(const Key(MOVIE_SEAT_C3_KEY)));
     await tester.pumpAndSettle(const Duration(seconds: 3));
     expect(find.text(TOTAL_PRICE_SIX), findsOneWidget);
     expect(find.text('2'), findsOneWidget);
-    expect(find.text(SELECTED_MOVIE_SEAT_C1_C3), findsOneWidget);
+    expect(find.text(SELECTED_MOVIE_SEAT_C2_C3), findsOneWidget);
 
-    // verify that seats C-1, C-3 are selected and other unselected
-    expect(find.text(SELECTED_MOVIE_SEAT_C1), findsOneWidget);
+    // verify that seats C-1=2, C-3 are selected and other unselected
+    expect(find.text(SELECTED_MOVIE_SEAT_C2), findsOneWidget);
     expect(find.text(SELECTED_MOVIE_SEAT_C3), findsOneWidget);
     expect(find.text(UNSELECTED_MOVIE_SEAT_C4), findsNothing);
 
@@ -166,16 +167,16 @@ void main() async {
     expect(find.text(TOTAL_PRICE_SIX), findsNothing);
     expect(find.text(TOTAL_PRICE_THREE), findsOneWidget);
     expect(find.text('1'), findsOneWidget);
-    expect(find.text(SELECTED_MOVIE_SEAT_C1), findsWidgets);
+    expect(find.text(SELECTED_MOVIE_SEAT_C2), findsWidgets);
 
     // tap buy ticket button and navigate to Snack Page
     // expect(find.byType(Scrollable), findsNWidgets(2));
     await tester.scrollUntilVisible(find.text(TOTAL_PRICE_THREE), 500.0, scrollable: find.byType(Scrollable).first);
-    await tester.tap(find.text(TOTAL_PRICE_THREE), warnIfMissed: false);
-    await tester.pumpAndSettle(const Duration(seconds: 10));
+    await tester.tap(find.byType(PrimaryButtonView), warnIfMissed: false);
+    await tester.pumpAndSettle(const Duration(seconds: 5));
 
     // verify that Snack Page appeared
-    // expect(find.byType(MovieSnackPage), findsOneWidget);
+    expect(find.byType(MovieSnackPage), findsOneWidget);
     expect(find.text(SNACK_POPCORN), findsOneWidget);
     expect(find.text(SNACK_SMOOTHIES), findsOneWidget);
     expect(find.text(SNACK_CARROTS), findsOneWidget);

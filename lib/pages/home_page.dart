@@ -3,15 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:the_movie_booking_app/blocs/home_bloc.dart';
 import 'package:the_movie_booking_app/data/vos/movie_vo.dart';
+import 'package:the_movie_booking_app/pages/log_in_page.dart';
 import 'package:the_movie_booking_app/pages/movie_details_page.dart';
 import 'package:the_movie_booking_app/pages/welcome_page.dart';
-import 'package:the_movie_booking_app/resources/colors.dart';
 import 'package:the_movie_booking_app/resources/dimens.dart';
 import 'package:the_movie_booking_app/resources/strings.dart';
 import 'package:the_movie_booking_app/utils/utils.dart';
 import 'package:the_movie_booking_app/viewitems/movie_view.dart';
 import 'package:the_movie_booking_app/widgets/heading_text_view.dart';
 import 'package:the_movie_booking_app/widgets/sub_heading_text_view.dart';
+
+import '../config/config_values.dart';
+import '../config/environment_config.dart';
+import '../resources/colors.dart';
 
 class HomePage extends StatelessWidget {
   List<String> menuItems = [
@@ -57,7 +61,7 @@ class HomePage extends StatelessWidget {
           width: MediaQuery.of(context).size.width * 0.8,
           child: Drawer(
             child: Container(
-              color: PRIMARY_COLOR,
+              color: THEME_COLORS[EnvironmentConfig.CONFIG_THEME_COLOR],
               padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
               child: Column(
                 children: [
@@ -136,26 +140,33 @@ class HomePage extends StatelessWidget {
               const SizedBox(
                 height: MARGIN_MEDIUM_2,
               ),
-              Selector<HomeBloc, List<MovieVO>?>(
-                selector: (context, bloc) => bloc.nowPlayingMovies,
-                builder: (context, nowPlayingMovies, child) =>
-                    MovieListSectionView(
-                  "Now Showing",
-                  (int movieId) => _navigateToMovieDetailPage(context, movieId),
-                  movies: nowPlayingMovies,
-                ),
-              ),
-              const SizedBox(
-                height: MARGIN_LARGE,
-              ),
-              Selector<HomeBloc, List<MovieVO>?>(
-                selector: (context, bloc) => bloc.comingSoonMovies,
-                builder: (context, comingSoonMovies, child) =>
-                    MovieListSectionView(
-                  "Coming Soon",
-                  (int movieId) => _navigateToMovieDetailPage(context, movieId),
-                  movies: comingSoonMovies,
-                ),
+              Consumer<HomeBloc>(
+                builder: (context, bloc, child) {
+                  return (MOVIES_LAYOUTS[
+                              EnvironmentConfig.CONFIG_HOME_MOVIES_LAYOUT] ==
+                          "horizontal_list")
+                      ? HorizontalMovieListsSectionView(
+                          nowPlayingMovies: bloc.nowPlayingMovies,
+                          comingSoonMovies: bloc.comingSoonMovies,
+                          onTapMovie: (int movieId) =>
+                              _navigateToMovieDetailPage(
+                            context,
+                            movieId,
+                          ),
+                        )
+                      : VerticalMovieGridSectionView(
+                          movies: bloc.selectedTabIndex == 0
+                              ? bloc.nowPlayingMovies
+                              : bloc.comingSoonMovies,
+                          onTapMovie: (movieId) =>
+                              _navigateToMovieDetailPage(context, movieId),
+                          onTapTab: (selectedIndex) {
+                            HomeBloc bloc =
+                                Provider.of<HomeBloc>(context, listen: false);
+                            bloc.onTapTab(selectedIndex);
+                          },
+                        );
+                },
               ),
             ],
           ),
@@ -181,6 +192,89 @@ class HomePage extends StatelessWidget {
       MaterialPageRoute(
         builder: (context) => WelcomePage(),
       ),
+    );
+  }
+}
+
+class VerticalMovieGridSectionView extends StatelessWidget {
+  final List<MovieVO>? movies;
+  final Function(int) onTapMovie;
+  final Function(int) onTapTab;
+
+  VerticalMovieGridSectionView({
+    required this.movies,
+    required this.onTapMovie,
+    required this.onTapTab,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        DefaultTabController(
+          length: 2,
+          child: TabBar(
+            isScrollable: false,
+            indicatorColor: THEME_COLORS[EnvironmentConfig.CONFIG_THEME_COLOR],
+            labelColor: THEME_COLORS[EnvironmentConfig.CONFIG_THEME_COLOR],
+            labelPadding: const EdgeInsets.symmetric(vertical: MARGIN_MEDIUM),
+            indicatorWeight: 3.0,
+            unselectedLabelColor: PRIMARY_WELCOME_TEXT_COLOR,
+            onTap: (index) => onTapTab(index),
+            tabs: ["Now Playing", "Coming Soon"]
+                .map((label) => TabTextView(label))
+                .toList(),
+          ),
+        ),
+        const SizedBox(height: MARGIN_LARGE),
+        GridView.builder(
+          itemCount: movies?.length ?? 0,
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          padding: const EdgeInsets.only(left: MARGIN_MEDIUM_3),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2, childAspectRatio: 3 / 4),
+          itemBuilder: (context, index) {
+            return MovieView(
+              onTapMovie,
+              movie: movies?[index],
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class HorizontalMovieListsSectionView extends StatelessWidget {
+  final List<MovieVO>? nowPlayingMovies;
+  final List<MovieVO>? comingSoonMovies;
+  final Function(int) onTapMovie;
+
+  HorizontalMovieListsSectionView({
+    required this.nowPlayingMovies,
+    required this.comingSoonMovies,
+    required this.onTapMovie,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        MovieListSectionView(
+          "Now Showing",
+          onTapMovie,
+          movies: nowPlayingMovies,
+        ),
+        const SizedBox(
+          height: MARGIN_LARGE,
+        ),
+        MovieListSectionView(
+          "Coming Soon",
+          onTapMovie,
+          movies: comingSoonMovies,
+        ),
+      ],
     );
   }
 }

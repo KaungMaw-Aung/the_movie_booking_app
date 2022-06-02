@@ -14,7 +14,11 @@ class ChooseCardBloc extends ChangeNotifier {
   /// Model
   MovieBookingModel movieBookingModel = MovieBookingModelImpl();
 
-  ChooseCardBloc() {
+  ChooseCardBloc([MovieBookingModel? _movieBookingModel]) {
+    if (_movieBookingModel != null) {
+      movieBookingModel = _movieBookingModel;
+    }
+
     movieBookingModel.getUserCardsFromDatabase().listen((cards) {
       this.cards = cards;
       notifyListeners();
@@ -25,17 +29,23 @@ class ChooseCardBloc extends ChangeNotifier {
     selectedCardIndex = cardIndex;
   }
 
-  Future<VoucherVO?> checkout(
-    int cinemaDayTimeslotId,
-    String row,
-    String seatNumber,
-    String bookingDate,
-    double totalPrice,
-    int movieId,
-    int cardId,
-    int cinemaId,
-    List<SnackReqVO> snacks,
-  ) {
+  onTapCard(int cardId) {
+    cards = cards?.map((card) {
+      card.isSelected = (card.id == cardId);
+      return card;
+    }).toList() ?? [];
+    notifyListeners();
+  }
+
+  Future<VoucherVO?> checkout(int cinemaDayTimeslotId,
+      String row,
+      String seatNumber,
+      String bookingDate,
+      double totalPrice,
+      int movieId,
+      int cardId,
+      int cinemaId,
+      List<SnackReqVO> snacks,) {
     return movieBookingModel.checkout(
       CheckoutRequest(
         cinemaDayTimeslotId,

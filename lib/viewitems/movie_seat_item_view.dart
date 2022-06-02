@@ -5,6 +5,9 @@ import 'package:the_movie_booking_app/resources/colors.dart';
 import 'package:the_movie_booking_app/resources/dimens.dart';
 import 'package:the_movie_booking_app/utils/constants.dart';
 
+import '../config/config_values.dart';
+import '../config/environment_config.dart';
+
 class MovieSeatItemView extends StatelessWidget {
   final MovieSeatVO? movieSeat;
   final Function(MovieSeatVO?) onTapMovieSeat;
@@ -49,7 +52,7 @@ class MovieSeatItemView extends StatelessWidget {
     } else if (movieSeat?.isMovieSeatTaken() == true) {
       return MOVIE_SEAT_TAKEN_COLOR;
     } else if (movieSeat?.isMovieSeatAvailable() == true && movieSeat?.isSelected == true) {
-      return PRIMARY_COLOR;
+      return THEME_COLORS[EnvironmentConfig.CONFIG_THEME_COLOR];
     } else {
       return Colors.white;
     }

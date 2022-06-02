@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:the_movie_booking_app/blocs/movie_details_bloc.dart';
+import 'package:the_movie_booking_app/config/config_values.dart';
+import 'package:the_movie_booking_app/config/environment_config.dart';
 import 'package:the_movie_booking_app/data/vos/cast_vo.dart';
 import 'package:the_movie_booking_app/data/vos/movie_vo.dart';
 import 'package:the_movie_booking_app/network/api_constants.dart';
@@ -158,19 +160,33 @@ class MovieDetailsCastSectionView extends StatelessWidget {
         const SizedBox(
           height: MARGIN_MEDIUM_2,
         ),
-        Container(
-          height: MOVIE_DETAILS_CAST_SIZE,
-          child: ListView(
-            padding: const EdgeInsets.only(
-              left: MARGIN_MEDIUM_2,
-            ),
-            scrollDirection: Axis.horizontal,
-            children: casts
-                    ?.map((cast) => CastView(castImgUrl: cast.profilePath))
-                    .toList() ??
-                [],
-          ),
-        )
+        (CASTS_LAYOUTS[EnvironmentConfig.CONFIG_CASTS_LAYOUT] ==
+                "horizontal_list")
+            ? SizedBox(
+                height: MOVIE_DETAILS_CAST_SIZE,
+                child: ListView(
+                  padding: const EdgeInsets.only(
+                    left: MARGIN_MEDIUM_2,
+                  ),
+                  scrollDirection: Axis.horizontal,
+                  children: casts
+                          ?.map(
+                              (cast) => CastView(castImgUrl: cast.profilePath))
+                          .toList() ??
+                      [],
+                ),
+              )
+            : Padding(
+                padding: const EdgeInsets.only(left: MARGIN_MEDIUM_2),
+                child: Wrap(
+                  runSpacing: MARGIN_MEDIUM_2,
+                  children: casts
+                          ?.map(
+                              (cast) => CastView(castImgUrl: cast.profilePath))
+                          .toList() ??
+                      [],
+                ),
+              ),
       ],
     );
   }

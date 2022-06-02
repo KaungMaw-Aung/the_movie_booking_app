@@ -1,6 +1,9 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:the_movie_booking_app/blocs/snack_bloc.dart';
+import 'package:the_movie_booking_app/config/config_values.dart';
+import 'package:the_movie_booking_app/config/environment_config.dart';
 import 'package:the_movie_booking_app/data/vos/payment_vo.dart';
 import 'package:the_movie_booking_app/data/vos/snack_req_vo.dart';
 import 'package:the_movie_booking_app/data/vos/snack_vo.dart';
@@ -9,7 +12,6 @@ import 'package:the_movie_booking_app/resources/colors.dart';
 import 'package:the_movie_booking_app/resources/dimens.dart';
 import 'package:the_movie_booking_app/resources/strings.dart';
 import 'package:the_movie_booking_app/widgets/primary_button_view.dart';
-import 'package:collection/collection.dart';
 
 class MovieSnackPage extends StatelessWidget {
   final double ticketsPrice;
@@ -47,73 +49,86 @@ class MovieSnackPage extends StatelessWidget {
             child: const Icon(Icons.chevron_left),
           ),
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Selector<SnackBloc, List<SnackVO>?>(
-                selector: (context, bloc) => bloc.snacks,
-                shouldRebuild: (oldValue, newValue) => oldValue != newValue,
-                builder: (context, snacks, child) {
-                  SnackBloc bloc = Provider.of(context, listen: false);
-                  return ComboSetSectionView(
-                    snacks: snacks,
-                    onDecrease: (snack) {
-                      bloc.onTapSnackQtyDecrease(snack);
-                    },
-                    onIncrease: (snack) {
-                      bloc.onTapSnackQtyIncrease(snack);
-                    },
-                  );
-                },
-              ),
-              Selector<SnackBloc, double>(
-                selector: (context, bloc) => bloc.subTotal,
-                builder: (context, subTotal, child) {
-                  return Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-                    child: PromoCodeAndSubTotalSectionView(
-                      subTotal: subTotal,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(
-                height: MARGIN_LARGE,
-              ),
-              Selector<SnackBloc, List<PaymentVO>?>(
-                selector: (context, bloc) => bloc.paymentMethods,
-                shouldRebuild: (oldValue, newValue) => oldValue != newValue,
-                builder: (context, paymentMethods, child) {
-                  return Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
-                    child: PaymentMethodSectionView(
-                      paymentMethods: paymentMethods,
-                      onTapPayment: (paymentId) {
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Selector<SnackBloc, List<SnackVO>?>(
+                      selector: (context, bloc) => bloc.snacks,
+                      shouldRebuild: (oldValue, newValue) =>
+                          oldValue != newValue,
+                      builder: (context, snacks, child) {
                         SnackBloc bloc = Provider.of(context, listen: false);
-                        bloc.onTapPayment(paymentId);
+                        return ComboSetSectionView(
+                          snacks: snacks,
+                          onDecrease: (snack) {
+                            bloc.onTapSnackQtyDecrease(snack);
+                          },
+                          onIncrease: (snack) {
+                            bloc.onTapSnackQtyIncrease(snack);
+                          },
+                        );
                       },
                     ),
-                  );
-                },
+                    Selector<SnackBloc, double>(
+                      selector: (context, bloc) => bloc.subTotal,
+                      builder: (context, subTotal, child) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: MARGIN_MEDIUM_2),
+                          child: PromoCodeAndSubTotalSectionView(
+                            subTotal: subTotal,
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(
+                      height: MARGIN_LARGE,
+                    ),
+                    Selector<SnackBloc, List<PaymentVO>?>(
+                      selector: (context, bloc) => bloc.paymentMethods,
+                      shouldRebuild: (oldValue, newValue) =>
+                          oldValue != newValue,
+                      builder: (context, paymentMethods, child) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: MARGIN_MEDIUM_2),
+                          child: PaymentMethodSectionView(
+                            paymentMethods: paymentMethods,
+                            onTapPayment: (paymentId) {
+                              SnackBloc bloc =
+                                  Provider.of(context, listen: false);
+                              bloc.onTapPayment(paymentId);
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-              Selector<SnackBloc, double>(
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Selector<SnackBloc, double>(
                 selector: (context, bloc) => bloc.subTotal,
                 builder: (context, subTotal, child) {
                   return Container(
-                    margin: const EdgeInsets.symmetric(vertical: MARGIN_LARGE),
+                    margin: const EdgeInsets.symmetric(
+                        vertical: MARGIN_LARGE),
                     child: PrimaryButtonView(
                       "Pay \$ $subTotal",
-                      () => _navigateToChooseCardPage(context),
+                          () => _navigateToChooseCardPage(context),
                       isElevated: true,
                     ),
                   );
                 },
               ),
-            ],
-          ),
+            )
+          ],
         ),
       ),
     );
@@ -208,7 +223,7 @@ class PaymentMethodItemView extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: (paymentMethod?.isSelected == true)
-              ? PRIMARY_COLOR
+              ? THEME_COLORS[EnvironmentConfig.CONFIG_THEME_COLOR]
               : Colors.white,
           border: Border.all(
               color: (paymentMethod?.isSelected == true)
@@ -328,16 +343,18 @@ class ComboSetSectionView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      scrollDirection: Axis.vertical,
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      children: snacks?.mapIndexed((index, snack) => ComboSetViewItem(
-        key: Key("snack_$index"),
-        snack: snack,
-        onIncrease: onIncrease,
-        onDecrease: onDecrease,
-      )).toList() ?? []
-    );
+        scrollDirection: Axis.vertical,
+        physics: const NeverScrollableScrollPhysics(),
+        shrinkWrap: true,
+        children: snacks
+                ?.mapIndexed((index, snack) => ComboSetViewItem(
+                      key: Key("snack_$index"),
+                      snack: snack,
+                      onIncrease: onIncrease,
+                      onDecrease: onDecrease,
+                    ))
+                .toList() ??
+            []);
   }
 }
 
@@ -351,7 +368,7 @@ class ComboSetViewItem extends StatelessWidget {
     required this.snack,
     required this.onIncrease,
     required this.onDecrease,
-  }): super(key: key);
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -404,7 +421,7 @@ class ComboSetQtyButtonGroupView extends StatelessWidget {
     required this.onIncrease,
     required this.onDecrease,
     required this.quantity,
-  }): super(key: key);
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

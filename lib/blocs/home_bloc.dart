@@ -9,11 +9,17 @@ class HomeBloc extends ChangeNotifier {
   String? name, email;
   List<MovieVO>? nowPlayingMovies;
   List<MovieVO>? comingSoonMovies;
+  int selectedTabIndex = 0;
 
   /// Model
   MovieBookingModel movieBookingModel = MovieBookingModelImpl();
 
-  HomeBloc() {
+  HomeBloc([MovieBookingModel? _movieBookingModel]) {
+
+    if (_movieBookingModel != null) {
+      movieBookingModel = _movieBookingModel;
+    }
+
     /// get user data
     movieBookingModel.getUserFromDatabase().listen((user) {
       name = user?.name ?? "";
@@ -44,6 +50,11 @@ class HomeBloc extends ChangeNotifier {
       movieBookingModel.deleteUserFromDatabase();
       return Future.value(message);
     });
+  }
+
+  void onTapTab(int selectedIndex) {
+    selectedTabIndex = selectedIndex;
+    notifyListeners();
   }
 
 }

@@ -22,13 +22,14 @@ class CardVOAdapter extends TypeAdapter<CardVO> {
       fields[2] as String?,
       fields[3] as String?,
       fields[4] as String?,
+      fields[5] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, CardVO obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class CardVOAdapter extends TypeAdapter<CardVO> {
       ..writeByte(3)
       ..write(obj.expirationDate)
       ..writeByte(4)
-      ..write(obj.cardType);
+      ..write(obj.cardType)
+      ..writeByte(5)
+      ..write(obj.isSelected);
   }
 
   @override
@@ -62,6 +65,7 @@ CardVO _$CardVOFromJson(Map<String, dynamic> json) => CardVO(
       json['card_number'] as String?,
       json['expiration_date'] as String?,
       json['card_type'] as String?,
+      json['isSelected'] as bool,
     );
 
 Map<String, dynamic> _$CardVOToJson(CardVO instance) => <String, dynamic>{
@@ -70,4 +74,5 @@ Map<String, dynamic> _$CardVOToJson(CardVO instance) => <String, dynamic>{
       'card_number': instance.cardNumber,
       'expiration_date': instance.expirationDate,
       'card_type': instance.cardType,
+      'isSelected': instance.isSelected,
     };

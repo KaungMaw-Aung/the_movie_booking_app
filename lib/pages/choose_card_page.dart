@@ -1,4 +1,3 @@
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:the_movie_booking_app/blocs/choose_card_bloc.dart';
@@ -66,7 +65,7 @@ class ChooseCardPage extends StatelessWidget {
             const SizedBox(
               height: MARGIN_XLARGE,
             ),
-            Selector<ChooseCardBloc, List<CardVO>?>(
+            /*Selector<ChooseCardBloc, List<CardVO>?>(
               selector: (context, bloc) => bloc.cards,
               builder: (context, cards, child) {
                 return Container(
@@ -95,6 +94,34 @@ class ChooseCardPage extends StatelessWidget {
                         )
                       : const Center(
                           child: Text("You currently have no cards added.")),
+                );
+              },
+            ),*/
+            Selector<ChooseCardBloc, List<CardVO>?>(
+              selector: (context, bloc) => bloc.cards,
+              builder: (context, cards, child) {
+                return SizedBox(
+                  height: CARD_CAROUSEL_HEIGHT,
+                  child: (cards?.isNotEmpty == true)
+                      ? ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: const EdgeInsets.only(left: MARGIN_MEDIUM_2),
+                          itemCount: cards?.length ?? 0,
+                          itemBuilder: (BuildContext context, int index) {
+                            return CardWithBorderView(
+                              card: cards?[index],
+                              onTapCard: (cardId) {
+                                ChooseCardBloc bloc = Provider.of(context, listen: false);
+                                bloc.onTapCard(cardId);
+                              },
+                            );
+                          },
+                        )
+                      : const Center(
+                          child: Text(
+                            "You currently have no cards added.",
+                          ),
+                        ),
                 );
               },
             ),
@@ -229,6 +256,58 @@ class CardView extends StatelessWidget {
             expDate: card?.expirationDate,
           )
         ],
+      ),
+    );
+  }
+}
+
+class CardWithBorderView extends StatelessWidget {
+  final CardVO? card;
+  final Function(int) onTapCard;
+
+  CardWithBorderView({
+    required this.card,
+    required this.onTapCard,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => onTapCard(card?.id ?? -1),
+      child: Container(
+        width: 300,
+        margin: const EdgeInsets.only(right: MARGIN_MEDIUM_2),
+        padding: const EdgeInsets.all(MARGIN_MEDIUM_2),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(MARGIN_MEDIUM),
+          color: THE_MOVIE_PRIMARY_COLOR,
+          border: Border.all(
+              color: (card?.isSelected == true)
+                  ? CARD_BORDER_COLOR
+                  : GHOST_BUTTON_BORDER_COLOR_ON_PRIMARY,
+              width: 3),
+        ),
+        child: Column(
+          children: [
+            VisaLogoAndMoreButtonView(),
+            const SizedBox(
+              height: MARGIN_MEDIUM_3,
+            ),
+            Text(
+              card?.cardNumber ?? "****  ****  ****  8014",
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: TEXT_HEADING_1X,
+                letterSpacing: 2,
+              ),
+            ),
+            const Spacer(),
+            CardHolderAndExpiresSectionView(
+              holder: card?.cardHolder,
+              expDate: card?.expirationDate,
+            )
+          ],
+        ),
       ),
     );
   }

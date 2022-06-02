@@ -15,7 +15,13 @@ class MovieSeatsBloc extends ChangeNotifier {
   /// Model
   MovieBookingModel movieBookingModel = MovieBookingModelImpl();
 
-  MovieSeatsBloc(int timeslotId, String date) {
+  MovieSeatsBloc(int timeslotId, String date,
+      [MovieBookingModel? _movieBookingModel]) {
+
+    if (_movieBookingModel != null) {
+      movieBookingModel = _movieBookingModel;
+    }
+
     /// get seats and seat count in a row
     movieBookingModel.getCinemaSeatingPlan(timeslotId, date).then((value) {
       movieSeats = value?[0] as List<MovieSeatVO>;

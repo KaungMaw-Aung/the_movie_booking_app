@@ -28,8 +28,11 @@ class CardVO {
   @HiveField(4)
   String? cardType;
 
+  @HiveField(5)
+  bool isSelected = false;
+
   CardVO(this.id, this.cardHolder, this.cardNumber, this.expirationDate,
-      this.cardType);
+      this.cardType, this.isSelected);
 
   factory CardVO.fromJson(Map<String, dynamic> json) => _$CardVOFromJson(json);
 

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:the_movie_booking_app/data/models/movie_booking_model.dart';
 import 'package:the_movie_booking_app/data/vos/voucher_vo.dart';
 
 class TicketBloc extends ChangeNotifier {
@@ -10,7 +11,7 @@ class TicketBloc extends ChangeNotifier {
   String cinema;
 
   TicketBloc({
-    required this.voucher,
+  required this.voucher,
     required this.moviePosterUrl,
     required this.movieTitle,
     required this.cinema,

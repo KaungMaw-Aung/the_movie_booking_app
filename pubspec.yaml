@@ -90,6 +90,7 @@ flutter:
     - assets/images/mawgyi.jpg
     - assets/images/welcome_movie_img.png
     - assets/images/visa_logo.png
+    - assets/images/the_movie_icon.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:

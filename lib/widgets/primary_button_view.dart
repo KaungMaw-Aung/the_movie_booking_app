@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:the_movie_booking_app/resources/colors.dart';
 import 'package:the_movie_booking_app/resources/dimens.dart';
 
+import '../config/config_values.dart';
+import '../config/environment_config.dart';
+
 class PrimaryButtonView extends StatelessWidget {
   final String buttonText;
   final bool isGhostButton;
@@ -26,7 +29,7 @@ class PrimaryButtonView extends StatelessWidget {
         child: Container(
           height: PRIMARY_BUTTON_HEIGHT,
           decoration: BoxDecoration(
-            color: isGhostButton ? Colors.transparent : PRIMARY_COLOR,
+            color: isGhostButton ? Colors.transparent : THEME_COLORS[EnvironmentConfig.CONFIG_THEME_COLOR],
             borderRadius: BorderRadius.circular(MARGIN_MEDIUM),
             border: isGhostButton
                 ? Border.all(

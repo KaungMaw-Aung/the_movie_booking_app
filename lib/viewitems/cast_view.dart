@@ -13,6 +13,7 @@ class CastView extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(right: MARGIN_LARGE),
       width: MOVIE_DETAILS_CAST_SIZE,
+      height: MOVIE_DETAILS_CAST_SIZE,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         image: DecorationImage(

@@ -8,6 +8,9 @@ import 'package:the_movie_booking_app/resources/colors.dart';
 import 'package:the_movie_booking_app/resources/dimens.dart';
 import 'package:the_movie_booking_app/widgets/primary_button_view.dart';
 
+import '../config/config_values.dart';
+import '../config/environment_config.dart';
+
 class MovieChooseTimePage extends StatelessWidget {
   final int? movieId;
   final String? movieTitle;
@@ -24,7 +27,7 @@ class MovieChooseTimePage extends StatelessWidget {
     return Theme(
       data: Theme.of(context).copyWith(
         appBarTheme: Theme.of(context).appBarTheme.copyWith(
-              backgroundColor: PRIMARY_COLOR,
+              backgroundColor: THEME_COLORS[EnvironmentConfig.CONFIG_THEME_COLOR],
               iconTheme: Theme.of(context).appBarTheme.iconTheme?.copyWith(
                     color: Colors.white,
                     size: MARGIN_XLARGE,
@@ -186,7 +189,7 @@ class ChooseItemGridView extends StatelessWidget {
                       top: MARGIN_MEDIUM),
                   decoration: BoxDecoration(
                     color: (cinema?.timeslots?[index].isSelected == true)
-                        ? PRIMARY_COLOR
+                        ? THEME_COLORS[EnvironmentConfig.CONFIG_THEME_COLOR]
                         : Colors.white,
                     border: Border.all(
                       color: Colors.grey,
@@ -225,7 +228,7 @@ class MovieChooseDateView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: MOVIE_TIME_DATE_LIST_HEIGHT,
-      color: PRIMARY_COLOR,
+      color: THEME_COLORS[EnvironmentConfig.CONFIG_THEME_COLOR],
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: MARGIN_MEDIUM_2),
         scrollDirection: Axis.horizontal,
